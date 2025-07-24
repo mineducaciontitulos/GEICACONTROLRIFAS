@@ -1,6 +1,7 @@
 Flask==2.3.2
 gunicorn==21.2.0
 twilio==9.6.3
-python-dotenv==1.1.0
+python-dotenv==1.0.1
 Pillow==10.1.0
+
 
