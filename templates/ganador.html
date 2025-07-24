@@ -1,0 +1,13 @@
+<h2>🎉 Datos del Ganador 🎉</h2>
+
+{% if ganador %}
+<ul>
+  <li><strong>Nombre:</strong> {{ ganador.nombre_cliente }}</li>
+  <li><strong>WhatsApp:</strong> {{ ganador.whatsapp }}</li>
+  <li><strong>Número Ganador:</strong> {{ ganador.numero }}</li>
+  <li><strong>Rifa:</strong> {{ ganador.nombre_rifa }}</li>
+  <li><strong>Fecha de Compra:</strong> {{ ganador.fecha_compra }}</li>
+</ul>
+{% else %}
+<p>No se encontró información del ganador.</p>
+{% endif %}

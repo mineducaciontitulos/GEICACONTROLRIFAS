@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titulo %}Configurar Métodos de Pago{% endblock %}
+
+{% block contenido %}
+<div class="contenedor" style="max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 0 15px rgba(0,0,0,0.1);">
+  <h2 style="text-align:center; color:#1c92d2;">⚙️ Métodos de Pago</h2>
+
+  <form method="POST" action="{{ url_for('admin_routes.guardar_metodos_pago') }}">
+    <label for="cuenta_nequi">Número Nequi</label>
+    <input type="text" id="cuenta_nequi" name="cuenta_nequi" value="{{ metodos[0] or '' }}" placeholder="Ej: 3001234567" required>
+
+    <label for="cuenta_daviplata">Número Daviplata</label>
+    <input type="text" id="cuenta_daviplata" name="cuenta_daviplata" value="{{ metodos[1] or '' }}" placeholder="Ej: 3101234567" required>
+
+    <label for="cuenta_pse">Enlace PSE o Banco</label>
+    <input type="text" id="cuenta_pse" name="cuenta_pse" value="{{ metodos[2] or '' }}" placeholder="https://...">
+
+    <button type="submit" class="boton-accion" style="margin-top:25px; width:100%;">💾 Guardar Métodos de Pago</button>
+  </form>
+
+  {% if get_flashed_messages() %}
+  <div style="background-color:#d4edda; color:#155724; padding:12px; border-radius:8px; margin-top:20px;">
+    {% for mensaje in get_flashed_messages() %}
+      <p>{{ mensaje }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

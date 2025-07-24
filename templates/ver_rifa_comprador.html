@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<meta charset="utf-8"/>
+<title>Participar en la Rifa</title>
+<style>
+  
+ .comprado {
+  background-color: #ff4d4d;
+  color: white;
+  border: 2px solid #b30000;
+  text-decoration: line-through;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+  #botonesPago {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+  #botonesPago button {
+    width: 180px;
+    font-size: 14px;
+    padding: 10px;
+    font-weight: bold;
+    border-radius: 10px;
+  }
+
+  #btnNequi {
+    background-color: purple;
+    color: white;
+  }
+
+  #btnDaviplata {
+    background-color: crimson;
+    color: white;
+  }
+
+  #btnPSE {
+    background-color: royalblue;
+    color: white;
+  }
+
+  #btnRealicePago {
+    background-color: green;
+    color: white;
+  }
+
+  #infoCuentaPago {
+    margin-top: 10px;
+    font-size: 15px;
+    text-align: center;
+  }
+
+.botones-accion {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 20px;
+}
+.botones-accion button {
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 10px;
+  min-width: 180px;
+  border: none;
+  cursor: pointer;
+}
+
+.botones-accion button:hover {
+  transform: scale(1.03);
+}
+.nequi { background-color: purple; color: white; }
+.davi { background-color: crimson; color: white; }
+.pse { background-color: dodgerblue; color: white; }
+.ya-pague { background-color: green; color: white; }
+
+  .btn-numero.seleccionado {
+    background-color: #6610f2 !important; /* morado */
+    color: white;
+    border: 2px solid #33006F;
+  }
+
+     .acciones-pago button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    margin: 10px 5px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-principal {
+    background-color: #1d4ed8;
+    color: white;
+  }
+
+  .btn-secundario {
+    background-color: #0f766e;
+    color: white;
+  }
+
+  .bloque-pago {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f1f5f9;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  .bloque-pago button {
+    padding: 10px 16px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    font-weight: bold;
+    width: 90%;
+    max-width: 300px;
+  }
+
+  .nequi {
+    background-color: #7c3aed;
+    color: white;
+  }
+
+  .davi {
+    background-color: #dc2626;
+    color: white;
+  }
+
+  .pse {
+    background-color: #2563eb;
+    color: white;
+  }
+
+
+    .btn-block {
+    width: 100%;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    .btn-block {
+      width: 60%;
+      margin: 0 auto;
+    }
+  }
+
+    body {
+      background: linear-gradient(to right, #e0f7fa, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .contenedor {
+      max-width: 800px;
+      margin: 40px auto;
+      background-color: white;
+      border-radius: 20px;
+      padding: 50px 40px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #0077b6;
+      text-align: center;
+      font-size: 34px;
+      margin-bottom: 25px;
+    }
+
+    .info {
+      font-size: 20px;
+      margin-bottom: 35px;
+      text-align: center;
+      color: #333;
+      line-height: 1.6;
+    }
+
+    .talonario {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .numero {
+      padding: 12px;
+      text-align: center;
+      border-radius: 10px;
+      font-weight: bold;
+      font-size: 17px;
+      transition: 0.3s;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .numero:hover {
+      transform: scale(1.06);
+    }
+
+    .disponible {
+      background-color: #d1f7c4;
+      color: #065f46;
+    }
+
+    .vendido {
+  background-color: #ff4d4d;
+  color: white;
+  border: 2px solid #b30000;
+  text-decoration: line-through;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+
+    .pendiente {
+      background-color: #ffe0a3;
+      color: #78350f;
+      cursor: not-allowed;
+    }
+
+    .leyenda {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .leyenda span {
+      display: inline-block;
+      margin: 0 12px;
+    }
+
+    .color-box {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      margin-right: 6px;
+      border-radius: 4px;
+    }
+
+    .disponible-box { background-color: #d1f7c4; }
+    .vendido-box { background-color: #f8bcbc; }
+    .pendiente-box { background-color: #ffe0a3; }
+
+    #formulario-compra {
+      display: none;
+      margin-top: 40px;
+      border-top: 2px solid #ddd;
+      padding-top: 30px;
+    }
+
+    form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    form input, form select {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .botones-accion button {
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  min-width: 180px;
+  cursor: pointer;
+}
+    .nequi { background-color: #8a05be; }
+    .davi { background-color: #ea4335; }
+    .pse { background-color: #1e88e5; }
+    .reservar { background-color: #10b981; }
+
+    .botones-accion button:hover {
+      opacity: 0.9;
+    }
+
+    @media (max-width: 600px) {
+      .contenedor {
+        padding: 25px;
+      }
+      h2 {
+        font-size: 26px;
+      }
+      .numero {
+        padding: 10px;
+        font-size: 15px;
+      }
+      .info {
+        font-size: 18px;
+      }
+    }
+
+    .seleccionado {
+      background-color: #c3ddfd !important;
+      color: #1e3a8a !important;
+      border: 2px solid #1e3a8a;
+    }
+  </style>
+</head>
+<style>
+  #formularioPago {
+    display: none;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    margin-top: 20px;
+    background: #fff;
+    border-radius: 15px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .btn-formulario {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-right: 10px;
+  }
+
+  .btn-cancelar {
+    background: crimson;
+    color: white;
+    border: none;
+  }
+
+  .btn-confirmar {
+    background: seagreen;
+    color: white;
+    border: none;
+  }
+</style>
+<body>
+  {% if rifas %}
+  {% set rifas_activas = rifas | selectattr('fecha_sorteo', '>=', fecha_actual) | list %}
+  {% if rifas_activas %}
+    {% for rifa in rifas_activas %}
+      <div class="contenedor">
+        <h2>{{ rifa['nombre_rifa'] }}</h2>
+        <div class="info">
+          <p><strong>Premio:</strong> {{ rifa['descripcion'] }}</p>
+          <p><strong>Avalúo:</strong> ${{ rifa['avaluo_premio'] }}</p>
+          <p><strong>Precio por número:</strong> ${{ rifa['precio_numero'] }}</p>
+          <p><strong>Sorteo:</strong> {{ rifa['fecha_sorteo'] }}</p>
+        </div>
+
+        <div class="talonario" id="talonario-{{ rifa['id'] }}">
+          {% for num in numeros_por_rifa[rifa['id']] %}
+            {% if num['estado'] == 'disponible' %}
+              <div class="numero disponible" data-numero="{{ num['numero'] }}" onclick="seleccionarNumero(this)">{{ num['numero'] }}</div>
+            {% else %}
+              <div class="numero {{ num['estado'] }}">{{ num['numero'] }}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <div class="leyenda">
+          <p>
+            <span><span class="color-box disponible-box"></span> Disponible</span>
+            <span><span class="color-box vendido-box"></span> Vendido</span>
+            <span><span class="color-box pendiente-box"></span> Pendiente</span>
+          </p>
+        </div>
+
+        <hr style="margin: 60px 0;"/>
+      </div>
+    {% endfor %}
+
+    <!-- BOTONES Y DATOS DE PAGO -->
+<div class="acciones-pago d-none" id="botonesPago" style="margin-top: 30px; text-align: center;">
+  <div class="botones-accion">
+    <button class="nequi" id="btnNequi">📱 Pagar con Nequi</button>
+    <button class="davi" id="btnDaviplata">💰 Pagar con Daviplata</button>
+    <button class="pse" id="btnPSE">💻 Pagar con PSE</button>
+    <!-- Botón para enviar comprobante al WhatsApp del administrador -->
+    <a id="botonWhatsappAdmin"
+   class="btn btn-success"
+   style="margin-top: 10px; background-color: #25D366; border: none;"
+   target="_blank">
+   📤 Ya realicé mi pago
+   </a>
+  </div>
+</div>
+<div id="infoCuentaPago" class="alert alert-info d-none" style="max-width: 300px; margin: 0 auto;"></div>
+<div id="formularioCompra" class="d-none" style="margin-top: 20px; max-width: 400px; margin-left: auto; margin-right: auto;">
+  <input type="text" id="nombreCliente" placeholder="Tu nombre" class="form-control mb-2" />
+  <input type="text" id="whatsappCliente" placeholder="WhatsApp" class="form-control mb-2" />
+<div style="text-align: center;">
+  <button class="btn btn-dark btn-lg px-5 py-2" onclick="registrarCompra()">
+    ✅ Confirmar compra
+  </button>
+</div>
+<!-- ⬇️ Aquí va el nuevo mensaje -->
+<div id="mensaje-confirmacion" style="display:none; background: #e0f8ec; color:#2c7a5d; padding:20px; border-radius:10px; box-shadow: 0 0 10px rgba(0,0,0,0.2); font-weight: bold; font-size: 16px; margin-top: 20px; text-align: center;">
+  ✅ ¡Compra registrada correctamente!<br>
+  📩 Ahora <strong>envía el comprobante</strong> de tu pago usando el botón <span style="color:#0a8f34;">"💳 Ya realicé mi pago"</span> para que tu compra sea validada.
+</div>
+
+    <div class="alert alert-info d-none" id="mensajeSeleccion" style="margin-top: 20px;">
+      Selecciona por lo menos un número para ver las opciones de pago.
+    </div>
+  {% else %}
+    <div style="text-align: center; padding: 40px;">
+      <h4>⚠️ No hay rifas activas en este momento.</h4>
+      <p>Regresa más tarde o contacta al administrador.</p>
+    </div>
+  {% endif %}
+{% else %}
+  <div style="text-align: center; padding: 40px;">
+    <h4>⚠️ No hay rifas disponibles para mostrar.</h4>
+    <p>El administrador aún no ha creado rifas.</p>
+  </div>
+{% endif %}
+
+<script>
+  let pagoRealizado = false;  // se activa al marcar "ya pagué"
+
+  let datos = {};  // variable global para guardar los datos del negocio
+
+  async function cargarDatosNegocio() {
+    try {
+      const response = await fetch('/api/negocio');
+      datos = await response.json();
+    } catch (error) {
+      console.error('Error al cargar datos del negocio:', error);
+    }
+    document.getElementById('btnNequi').addEventListener('click', () => {
+  mostrarCuentaSeleccionada('Nequi', datos.numero_nequi);
+});
+document.getElementById('btnDaviplata').addEventListener('click', () => {
+  mostrarCuentaSeleccionada('Daviplata', datos.numero_daviplata);
+});
+document.getElementById('btnPSE').addEventListener('click', () => {
+  mostrarCuentaSeleccionada('PSE', datos.cuenta_pse);
+});
+  }
+
+  function mostrarCuentaSeleccionada(tipo, cuenta) {
+  const info = document.getElementById('infoCuentaPago');
+  info.innerHTML = `Número para ${tipo}: <strong>${cuenta}</strong>`;
+  info.classList.remove('d-none');
+
+  const inputCuenta = document.getElementById('numero_admin');
+  if (inputCuenta) inputCuenta.value = cuenta;
+
+  // Mostrar número del admin
+  document.getElementById('cuenta_admin').style.display = 'block';
+
+  // 🔗 Armar link de WhatsApp
+  const nombre = document.getElementById('nombreCliente').value || "Cliente";
+  const whatsappCliente = document.getElementById('whatsappCliente').value || "Sin número";
+  const numeros = numerosSeleccionados.join(", ");
+  const mensaje = encodeURIComponent(`Hola, soy ${nombre}. Ya realicé el pago. Mis números son: ${numeros}`);
+  const link = `https://wa.me/57${cuenta}?text=${mensaje}`;
+
+  const btnWhatsApp = document.getElementById('btnEnviarComprobante');
+  btnWhatsApp.href = link;
+}
+
+  // Cargar datos apenas se seleccionen números
+  function actualizarBotonesPago() {
+    const botonesPago = document.getElementById('botonesPago');
+    const mensajeSeleccion = document.getElementById('mensajeSeleccion');
+
+    if (numerosSeleccionados.length > 0) {
+      botonesPago.classList.remove('d-none');
+      mensajeSeleccion.classList.add('d-none');
+      cargarDatosNegocio();
+      document.getElementById('formularioCompra').classList.remove('d-none');
+    } else {
+      botonesPago.classList.add('d-none');
+      mensajeSeleccion.classList.remove('d-none');
+      document.getElementById('formularioCompra').classList.add('d-none');
+      document.getElementById('infoCuentaPago').classList.add('d-none');
+    }
+  }
+ async function registrarCompra() {
+  const nombre = document.getElementById('nombreCliente').value;
+  const whatsapp = document.getElementById('whatsappCliente').value;
+
+  if (!nombre || !whatsapp || numerosSeleccionados.length === 0) {
+  alert("Por favor completa todos los campos y selecciona al menos un número.");
+  return;
+}
+
+  const rifaId = document.querySelector('.talonario').id.split('-')[1];
+
+  const payload = {
+    rifa_id: rifaId,
+    numeros: numerosSeleccionados,
+    nombre_cliente: nombre,
+    whatsapp_cliente: whatsapp
+  };
+
+  const response = await fetch('/registrar-compra', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const resultado = await response.json();
+  alert(resultado.mensaje);
+  numerosSeleccionados.forEach(numero => {
+  const el = document.querySelector(`.numero[data-numero="${numero}"]`);
+  if (el) {
+  el.classList.remove('seleccionado');
+  el.classList.add('vendido');
+  el.style.pointerEvents = 'none';
+  el.style.backgroundColor = '#ff4d4d'; // rojo fuerte
+  el.style.color = 'white';
+  el.style.border = '2px solid #b30000';
+  el.style.textDecoration = 'line-through';
+}
+});
+
+document.getElementById("mensaje-confirmacion").style.display = "block";
+setTimeout(() => {
+  document.getElementById("mensaje-confirmacion").style.display = "none";
+}, 10000);
+}
+let numerosSeleccionados = [];
+
+  function seleccionarNumero(elemento) {
+    const numero = elemento.getAttribute('data-numero');
+    const index = numerosSeleccionados.indexOf(numero);
+
+    if (index === -1) {
+      numerosSeleccionados.push(numero);
+      elemento.classList.add('seleccionado');
+    } else {
+      numerosSeleccionados.splice(index, 1);
+      elemento.classList.remove('seleccionado');
+    }
+
+    actualizarBotonesPago();  // Aquí activamos los botones de pago
+  }
+  
+
+  function seleccionarNumero(elemento) {
+    const numero = elemento.getAttribute('data-numero');
+    const index = numerosSeleccionados.indexOf(numero);
+
+    if (index === -1) {
+      numerosSeleccionados.push(numero);
+      elemento.classList.add('seleccionado');
+    } else {
+      numerosSeleccionados.splice(index, 1);
+      elemento.classList.remove('seleccionado');
+    }
+
+    actualizarBotonesPago();  // Aquí activamos los botones de pago
+  }
+  function mostrarCuentaAdmin() {
+  const input = document.getElementById('numero_admin');
+  if (input && input.value) {
+    document.getElementById('cuenta_admin').style.display = 'block';
+    pagoRealizado = true;  // ✅ marca que sí pagó
+  } else {
+    alert("Por favor selecciona un método de pago primero.");
+  }
+}
+
+
+function copiarCuentaAdmin() {
+  const input = document.getElementById('numero_admin');
+  input.select();
+  document.execCommand('copy');
+  alert("Número copiado al portapapeles.");
+}
+</script>
+<script>
+  async function enviarComprobantePago() {
+    const rifaId = document.querySelector('.talonario').id.split('-')[1];
+
+    // Obtener datos del negocio (número del admin)
+    const respuesta = await fetch(`/obtener-numero-admin/${rifaId}`);
+    const datos = await respuesta.json();
+
+    if (!datos || !datos.whatsapp_admin) {
+      alert("No se pudo obtener el número del administrador.");
+      return;
+    }
+
+    // Obtener datos del cliente
+    const nombreCliente = document.getElementById('nombreCliente').value;
+    const whatsappCliente = document.getElementById('whatsappCliente').value;
+    const numeros = numerosSeleccionados.join(", ");
+
+    // Armar mensaje de comprobante
+    const mensaje = `Hola, soy ${nombreCliente}. Ya realicé el pago de los números: ${numeros}. Mi WhatsApp es: ${whatsappCliente}`;
+    const numeroAdmin = `57${datos.whatsapp_admin}`;  // Prefijo +57 fijo
+
+    const urlWhatsApp = `https://wa.me/${numeroAdmin}?text=${encodeURIComponent(mensaje)}`;
+
+    // Redireccionar a WhatsApp (funciona en móviles y navegadores)
+    window.open(urlWhatsApp, '_blank');
+  }
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const botonWhatsapp = document.getElementById("botonWhatsappAdmin");
+    const adminTelefono = "{{ negocio['propietario_telefono'] }}";
+    
+    if (adminTelefono) {
+      // +57 por defecto
+      const telefonoCompleto = "57" + adminTelefono.replace(/\D/g, "");
+      const mensaje = encodeURIComponent("Hola, ya realicé el pago de mi número(s) en la rifa.");
+      const url = `https://wa.me/${telefonoCompleto}?text=${mensaje}`;
+      botonWhatsapp.href = url;
+    } else {
+      botonWhatsapp.href = "#";
+      botonWhatsapp.onclick = () => alert("⚠️ Teléfono del administrador no disponible.");
+    }
+  });
+</script>
+
+</body>
+</html>

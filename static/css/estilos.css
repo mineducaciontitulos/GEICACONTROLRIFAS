@@ -1,0 +1,247 @@
+.boton-accion {
+  display: inline-block;
+  padding: 12px 20px;
+  background-color: #1c92d2;
+  color: white;
+  text-align: center;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.boton-accion:hover {
+  background-color: #1769aa;
+}
+
+.boton-accion:active {
+  transform: scale(0.97);
+}
+
+.boton-accion:focus {
+  outline: 2px solid #005f9e;
+}
+
+.rifa-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+.rifa-card:hover {
+  transform: scale(1.01);
+}
+.boton-ver {
+  display: inline-block;
+  background-color: #1c92d2;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  margin-top: 10px;
+}
+.boton-ver:hover {
+  background-color: #155a8a;
+}
+
+/* --- Ajustes Responsivos para crear_rifa --- */
+@media (max-width: 768px) {
+  .rifa-card {
+    width: 95%;
+    margin: auto;
+  }
+}
+
+body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.container-rifa {
+  max-width: 600px;
+  width: 95%;
+  margin: auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+#formulario-rifa {
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  padding-bottom: 20px;
+}
+
+/* 🔧 Asegura que la página se pueda hacer scroll si el contenido crece */
+body {
+  height: auto;
+  min-height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  padding: 40px 10px;
+}
+
+/* 🧱 Contenedor del formulario */
+.container-rifa {
+  width: 100%;
+  max-width: 600px;
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 📱 Responsividad para pantallas pequeñas */
+@media (max-width: 768px) {
+  .container-rifa {
+    padding: 20px 15px;
+    margin: 10px;
+  }
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f0f4f8;
+}
+
+.container-formulario {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  overflow-y: auto;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+@media screen and (max-width: 768px) {
+  .container-formulario {
+    padding: 15px;
+    margin: 10px;
+  }
+
+  .boton-accion,
+  .boton-ver {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+  }
+}
+
+  html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #74ebd5, #ACB6E5);
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+  }
+
+  body {
+      padding-top: 60px; /* ✅ Este es el cambio clave */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* mantiene el formulario arriba */
+  }
+
+  .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 400px;
+  }
+
+  h2 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 25px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 15px;
+  }
+
+  .form-section-label {
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 25px;
+      text-align: center;
+  }
+
+  button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+      background-color: #0056b3;
+  }
+
+  .btn-rifa {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: #ffca28; /* Amarillo vibrante */
+  color: #000;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 10px;
+  border: 2px solid #fbc02d;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+}
+
+.btn-rifa:hover {
+  background-color: #fdd835;
+  color: #000;
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+}
+
+.btn-rifa:active {
+  transform: scale(0.97);
+}
+

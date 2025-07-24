@@ -1,0 +1,26 @@
+<table>
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Fecha sorteo</th>
+      <th>Estado</th>
+      <th>Enlace</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for rifa in rifas %}
+      <tr>
+        <td>{{ rifa.nombre_rifa }}</td>
+        <td>{{ rifa.fecha_sorteo }}</td>
+        <td>{{ rifa.estado }}</td>
+        <td>
+          {% if rifa.enlace %}
+            <a href="{{ rifa.enlace }}" target="_blank">🔗 Ver enlace</a>
+          {% else %}
+            <span style="color: gray;">Enlace expirado</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mis Rifas Creadas</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f4f7f9;
+      padding: 40px;
+    }
+
+    .contenedor {
+      max-width: 850px;
+      margin: auto;
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #007acc;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    .rifa {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 15px;
+      background-color: #f9fcff;
+    }
+
+    .rifa strong {
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <div class="info-contenedor">
+  <div class="alerta-responsive">
+    ⚠️ <strong>Importante:</strong> Tus rifas solo estarán visibles durante los primeros <strong>15 días</strong> desde su creación.<br>
+    Luego se ocultarán automáticamente de este panel.
+  </div>
+  <h2 class="titulo-principal">🎟️ Rifas Creadas</h2>
+</div>
+     {% if rifas %}
+      {% for rifa in rifas %}
+        <div class="rifa">
+          <p><strong>Nombre:</strong> {{ rifa['nombre_rifa'] }}</p>
+          <p><strong>Premio:</strong> {{ rifa['descripcion'] }}</p>
+          <p><strong>Precio por número:</strong> ${{ rifa['precio_numero'] }}</p>
+          <p><strong>Sorteo:</strong> {{ rifa['fecha_sorteo'] }}</p>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No hay rifas registradas aún.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

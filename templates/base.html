@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block titulo %}{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f1f5f9;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .contenedor {
+      background-color: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1c92d2;
+      margin-bottom: 25px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #333;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+
+    button, .boton-accion {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      background-color: #1c92d2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 25px;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+
+    button:hover, .boton-accion:hover {
+      background-color: #1769aa;
+    }
+
+    button:active, .boton-accion:active {
+      transform: scale(0.97);
+    }
+
+    #mensaje-flotante {
+      position: fixed;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4caf50;
+      color: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      display: none;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      z-index: 9999;
+    }
+
+    @media (max-width: 600px) {
+      .contenedor {
+        padding: 20px;
+      }
+
+      input, select, textarea {
+        font-size: 14px;
+      }
+
+      button, .boton-accion {
+        font-size: 15px;
+        padding: 12px;
+      }
+
+      h2 {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="contenedor">
+    {% block contenido %}{% endblock %}
+  </div>
+
+    {% if mensaje %}
+  <div id="mensajeFlotante">{{ mensaje }}</div>
+  <script>
+    window.onload = function () {
+      const mensaje = document.getElementById("mensajeFlotante");
+      if (mensaje) {
+        mensaje.style.display = "block";
+        mensaje.style.position = "fixed";
+        mensaje.style.top = "50%";
+        mensaje.style.left = "50%";
+        mensaje.style.transform = "translate(-50%, -50%)";
+        mensaje.style.backgroundColor = "#1c92d2";
+        mensaje.style.color = "white";
+        mensaje.style.padding = "16px 24px";
+        mensaje.style.borderRadius = "10px";
+        mensaje.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
+        mensaje.style.zIndex = "9999";
+        mensaje.style.fontSize = "18px";
+        mensaje.style.textAlign = "center";
+
+        setTimeout(() => {
+          mensaje.remove();
+        }, 3000);
+      }
+    };
+  </script>
+{% endif %}
+{% block scripts_extra %}{% endblock %}
+</body>
+</html>

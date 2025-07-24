@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | GEICACONTROLRIFAS</title>
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background: linear-gradient(to right, #1c92d2, #f2fcfe);
+    font-family: 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+
+  .login-container {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+  }
+
+  .login-container h2 {
+    margin-bottom: 25px;
+    color: #1c92d2;
+    font-size: 26px;
+    font-weight: bold;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 15px;
+    border: 2px solid #1c92d2;
+    border-radius: 10px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    outline: none;
+  }
+
+  input[type="text"]:focus,
+  input[type="password"]:focus {
+    border-color: #1769aa;
+    box-shadow: 0 0 8px rgba(23, 105, 170, 0.3);
+  }
+
+  button {
+    background: linear-gradient(to right, #43cea2, #185a9d);
+    color: white;
+    padding: 14px;
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  }
+
+  .mensaje {
+    color: #e53935;
+    font-size: 14px;
+    margin-top: 12px;
+    background: #ffeaea;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ffcccc;
+  }
+
+  .mensaje-success {
+  color: #2e7d32;
+  font-size: 14px;
+  margin-top: 12px;
+  background: #e8f5e9;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #c8e6c9;
+}
+
+.mensaje-error {
+  color: #c62828;
+  font-size: 14px;
+  margin-top: 12px;
+  background: #ffebee;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ef9a9a;
+}
+
+</style>
+
+</head>
+<body>
+  <div class="login-container">
+    <h2>Ingreso al Panel</h2>
+    <form method="POST">
+      <input type="text" name="usuario" placeholder="Usuario" required />
+      <input type="password" name="clave" placeholder="Contraseña" required />
+      <button type="submit">Entrar</button>
+    </form>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      {% if category == 'success' %}
+        <div class="mensaje-success">{{ message }}</div>
+      {% elif category == 'danger' %}
+        <div class="mensaje-error">{{ message }}</div>
+      {% else %}
+        <div class="mensaje">{{ message }}</div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="mensajes">
+      {% for category, message in messages %}
+        <div class="mensaje-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+</body>
+</html>

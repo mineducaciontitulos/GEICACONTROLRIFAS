@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Notificar Ganador</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #f0f4f8, #e0f7fa);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .contenedor {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #0072ff;
+      margin-bottom: 25px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    select,
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    input::placeholder {
+      color: #aaa;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 25px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(to right, #1c92d2, #0072ff);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: linear-gradient(to right, #0072ff, #0051a3);
+    }
+  </style>
+  <script>
+    async function buscarGanador() {
+      const rifaId = document.getElementById("rifa_id").value;
+      const numero = document.getElementById("numero_ganador").value;
+
+      if (rifaId && numero) {
+        const res = await fetch(`/buscar-ganador?rifa_id=${rifaId}&numero=${numero}`);
+        const data = await res.json();
+        const info = document.getElementById("info-comprador");
+
+        if (data.encontrado) {
+          info.innerText = `🎉 Ganador: ${data.nombre} - WhatsApp: ${data.telefono}`;
+        } else {
+          info.innerText = "❌ No se encontró comprador para ese número.";
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="contenedor">
+    <h2>🏆 Notificar al Ganador</h2>
+
+    <form method="POST" action="/enviar-notificacion-ganador">
+      <input type="hidden" name="slug" value="{{ slug }}">
+
+      <label>Escriba o seleccione una rifa:</label>
+      <select name="rifa_id" id="rifa_id" required>
+        <option disabled selected>Selecciona una rifa...</option>
+        {% for rifa in rifas %}
+          <option value="{{ rifa['id'] }}">{{ rifa['nombre_rifa'] }} - {{ rifa['fecha_sorteo'] }}</option>
+        {% endfor %}
+      </select>
+
+      <label>Número ganador:</label>
+      <input type="text" name="numero_ganador" id="numero_ganador" placeholder="Ej: 045" required onblur="buscarGanador()">
+
+      <div id="info-comprador"></div>
+
+      <button type="submit">📩 Notificar por WhatsApp</button>
+    </form>
+  </div>
+</body>
+</html>

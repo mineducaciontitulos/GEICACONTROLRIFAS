@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Superadmin - GEICA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #e3ffe7, #d9e7ff);
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #1f2937;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .btn-crear {
+            display: inline-block;
+            margin: 20px auto;
+            background-color: #10b981;
+            color: white;
+            padding: 10px 20px;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-crear:hover {
+            background-color: #059669;
+        }
+        table {
+            width: 95%;
+            margin: 10px auto;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        th, td {
+            padding: 14px 10px;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #111827;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        .acciones button {
+            padding: 6px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .ver { background-color: #3b82f6; color: white; }
+        .editar { background-color: #f59e0b; color: white; }
+        .eliminar { background-color: #ef4444; color: white; }
+        .estado-activo { color: green; font-weight: bold; }
+        .estado-inactivo { color: red; font-weight: bold; }
+        .switch-form {
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h2>👑 Panel de Negocios Registrados - GEICAGENDAPROLOCAL</h2>
+</header>
+
+<div style="text-align:center;">
+    <a href="{{ url_for('superadmin.crear_cliente') }}" class="btn-crear">➕ Crear Nuevo Cliente</a>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Negocio</th>
+            <th>Administrador</th>
+            <th>WhatsApp</th>
+            <th>Ciudad</th>
+            <th>Slug</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for negocio in negocios %}
+        <tr>
+            <td>{{ negocio.id }}</td>
+            <td>{{ negocio.nombre }}</td>
+            <td>{{ negocio.propietario_nombre }}</td>
+            <td>{{ negocio.propietario_telefono }}</td>
+            <td>{{ negocio.ciudad }}</td>
+            <td>
+                <a href="/{{ negocio.slug }}" target="_blank">{{ negocio.slug }}</a>
+            </td>
+            <td>
+                <form action="{{ url_for('superadmin.cambiar_estado_negocio') }}" method="POST">
+                    <input type="hidden" name="negocio_id" value="{{ negocio.id }}">
+                    <input type="checkbox" name="activo" onchange="this.form.submit()" {% if negocio.activo == 1 %}checked{% endif %}>
+                    <span class="{{ 'estado-activo' if negocio.activo == 1 else 'estado-inactivo' }}">
+                        {{ 'Activo' if negocio.activo == 1 else 'Inactivo' }}
+                    </span>
+                </form>
+            </td>
+            <td class="acciones">
+                <a href="{{ url_for('admin.ver_rifas_admin_slug', slug=negocio.slug) }}">
+                <button class="ver">Ver</button>
+                </a>
+                <button class="editar">Editar</button>
+                <button class="eliminar">Eliminar</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

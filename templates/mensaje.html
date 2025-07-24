@@ -1,0 +1,65 @@
+<!-- mensaje.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mensaje</title>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px;
+      background: linear-gradient(to bottom right, #fdfbfb, #ebedee);
+    }
+    h2 {
+      color: #28a745;
+      font-size: 26px;
+    }
+    a {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 12px 20px;
+      background-color: #007bff;
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 18px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    a:hover {
+      background-color: #0056b3;
+    }
+    .ticket-container {
+      margin-top: 30px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+      display: inline-block;
+    }
+    .ticket-container img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    .ticket-container h3 {
+      color: #0077b6;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>{{ mensaje }}</h2>
+
+  {% if ticket_url %}
+  <div class="ticket-container">
+    <h3>🎟️ Este es tu ticket:</h3>
+    <img src="{{ url_for('static', filename=ticket_url) }}" alt="Ticket de la rifa">
+  </div>
+  {% endif %}
+
+<a href="{{ url_for('admin.dashboard') }}">⬅️ Volver al Panel del Administrador</a>
+
+
+</body>
+</html>

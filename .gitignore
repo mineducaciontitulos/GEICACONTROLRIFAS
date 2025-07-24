@@ -1,0 +1,19 @@
+# ❌ Ignorar base de datos local y ejecutables
+*.db
+*.sqlite3
+sqlite3.exe
+
+# ❌ Ignorar entornos y configuraciones locales
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ❌ Ignorar archivos del sistema y de VS Code
+.vscode/
+.DS_Store
+
+# ❌ Ignorar dependencias si usas entorno virtual
+venv/
+env/

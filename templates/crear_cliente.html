@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar nuevo negocio</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #7EC8E3, #B6E0FE);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+          .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+            width: 430px;
+            max-width: 95%;
+            margin-top: 60px;
+            margin-bottom: 60px;
+            animation: fadeIn 0.5s ease-in-out;
+          }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            color: #0077b6;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            border-radius: 12px;
+            border: 1.5px solid #b3d9ff;
+            background-color: #f8faff;
+            font-size: 15px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            border-color: #0077b6;
+            outline: none;
+        }
+
+        .separador {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #0077b6;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        input[type="submit"] {
+            background: linear-gradient(135deg, #0077b6, #0096c7);
+            color: white;
+            font-weight: bold;
+            padding: 13px;
+            width: 100%;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease-in-out;
+        }
+
+        input[type="submit"]:hover {
+            background: linear-gradient(135deg, #005f87, #007ea7);
+            transform: scale(1.02);
+        }
+     
+  html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #74ebd5, #ACB6E5);
+      font-family: Arial, sans-serif;
+      overflow-x: hidden;
+  }
+
+  body {
+      padding-top: 60px; /* ✅ Este es el cambio clave */
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* mantiene el formulario arriba */
+  }
+
+  .form-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 90%;
+      max-width: 400px;
+  }
+
+  h2 {
+      text-align: center;
+      color: #007bff;
+      margin-bottom: 25px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      font-size: 15px;
+  }
+
+  .form-section-label {
+      font-weight: bold;
+      color: #007bff;
+      margin-top: 25px;
+      text-align: center;
+  }
+
+  button {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+  }
+
+  button:hover {
+      background-color: #0056b3;
+  }
+
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Registrar nuevo negocio</h2>
+        <form method="POST" action="/crear-cliente">
+            <label>Nombre del negocio</label>
+            <input type="text" name="nombre" required>
+
+            <label>Nombre del administrador</label>
+            <input type="text" name="propietario_nombre" required>
+
+            <label>Número de WhatsApp</label>
+            <input type="text" name="propietario_telefono" required>
+
+            <label>Ciudad</label>
+            <input type="text" name="ciudad" required>
+
+            <label for="slug">Slug (enlace único):</label>
+            <input type="text" name="slug" id="slug" required>
+
+            <label>Usuario de acceso</label>
+            <input type="text" name="usuario" required>
+  
+            <label>Contraseña</label>
+            <input type="password" name="contrasena" required>
+
+            <input type="submit" value="Crear cliente">
+        </form>
+    </div>
+    <div id="mensaje-flotante" style="display:none;"></div>
+
+  <!-- Este bloque va antes de cerrar </body> -->
+<script>
+  const mensajes = JSON.parse('{{ get_flashed_messages(with_categories=true) | tojson | safe }}');
+  if (mensajes.length > 0) {
+    const tipo = mensajes[0][0];
+    const texto = mensajes[0][1];
+
+    const div = document.createElement('div');
+    div.id = 'mensaje-flotante';
+    div.innerText = texto;
+
+    // ✅ APLICAR ESTILOS BIEN FORMADOS
+    div.style.position = 'fixed';
+    div.style.top = '50%';
+    div.style.left = '50%';
+    div.style.transform = 'translate(-50%, -50%)';
+    div.style.padding = '20px';
+    div.style.backgroundColor = tipo === 'success' ? '#28a745' : '#dc3545';
+    div.style.color = 'white';
+    div.style.fontSize = '18px';
+    div.style.borderRadius = '10px';
+    div.style.zIndex = '9999';
+    div.style.boxShadow = '0 0 20px rgba(0,0,0,0.3)';
+    div.style.textAlign = 'center';
+    div.style.opacity = '0';
+    div.style.transition = 'opacity 0.5s ease';
+
+    document.body.appendChild(div);
+
+    setTimeout(() => {
+      div.style.opacity = '1';
+    }, 100);
+
+    setTimeout(() => {
+      div.style.opacity = '0';
+      setTimeout(() => div.remove(), 500);
+    }, 3000);
+  }
+</script>
+
+</body>
+</html>

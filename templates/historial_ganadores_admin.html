@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="text-primary fw-bold">🏆 Historial de Ganadores</h2>
+        <p class="text-muted">
+            Consulta los números ganadores en rifas del negocio <strong>{{ negocio.nombre }}</strong>.
+        </p>
+    </div>
+
+    {% if historial and historial|length > 0 %}
+        <div class="row justify-content-center">
+            {% for item in historial %}
+                <div class="col-md-6 col-lg-5 mb-4">
+                    <div class="card border-0 shadow-lg rounded-4">
+                        <div class="card-body">
+                            <h5 class="card-title text-center text-dark fw-bold">{{ item[0] }}</h5> <!-- nombre_rifa -->
+                            <hr>
+                            <p><strong>🎯 Número Ganador:</strong> <span class="text-success">{{ item[1] }}</span></p> <!-- numero_ganador -->
+                            <p><strong>🧍 Cliente:</strong> {{ item[2] }}</p> <!-- nombre_cliente -->
+                            <p><strong>📅 Fecha del Sorteo:</strong> {{ item[3] }}</p> <!-- fecha_sorteo -->
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info text-center mt-4">
+            🚫 Aún no se ha registrado ningún ganador en rifas.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

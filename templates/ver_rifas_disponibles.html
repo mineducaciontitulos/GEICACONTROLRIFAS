@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Rifas Disponibles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      background-color: #f4f7fa;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .contenedor {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h2 {
+      text-align: center;
+      color: #1c92d2;
+      margin-bottom: 40px;
+    }
+
+    .tarjetas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .rifa-card {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      padding: 20px;
+      transition: transform 0.2s ease;
+    }
+
+    .rifa-card:hover {
+      transform: scale(1.02);
+    }
+
+    .rifa-card h3 {
+      color: #1c92d2;
+      margin-top: 0;
+    }
+
+    .rifa-card p {
+      margin: 6px 0;
+    }
+
+    .boton {
+      display: block;
+      margin-top: 15px;
+      padding: 10px;
+      text-align: center;
+      background: linear-gradient(to right, #43cea2, #185a9d);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    .boton:hover {
+      background: linear-gradient(to right, #185a9d, #43cea2);
+    }
+
+    @media (max-width: 600px) {
+      .rifa-card {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="contenedor">
+    <h2>🎟️ Rifas Disponibles</h2>
+    <div class="tarjetas">
+      {% for rifa in rifas %}
+        <div class="rifa-card">
+          <h3>{{ rifa['nombre_rifa'] }}</h3>
+          <p><strong>Premio:</strong> {{ rifa['descripcion'] }}</p>
+          <p><strong>Valor por número:</strong> ${{ rifa['precio_numero'] }}</p>
+          <p><strong>Fecha del sorteo:</strong> {{ rifa['fecha_sorteo'] }}</p>
+          <a href="{{ url_for('ver_rifa_comprador', rifa_id=rifa['id']) }}" class="boton">Ver Talonario</a>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

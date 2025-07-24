@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Crear nueva rifa</title>
+  <style>
+    #mensaje-flotante {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4caf50;
+      color: white;
+      padding: 20px 30px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: bold;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
+    body {
+      background-color: #f1f5f9;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;    
+    }
+    .contenedor {
+      background-color: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+    h2 {
+      text-align: center;
+      color: #1c92d2;
+      margin-bottom: 25px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #333;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-sizing: border-box;
+      font-size: 15px;
+    }
+    .boton-accion {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      background-color: #1c92d2;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 25px;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+    .boton-accion:hover {
+      background-color: #1769aa;
+    }
+    .boton-accion:active {
+      transform: scale(0.97);
+    }
+    html, body {
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 0;
+      margin: 0;
+    }
+    .contenedor {
+      width: 95%;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-sizing: border-box;
+    }
+    @media screen and (max-width: 768px) {
+      .contenedor {
+        padding: 20px 15px;
+        margin: 15px;
+      }
+      .boton-accion {
+        font-size: 15px;
+        padding: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  {% extends "base.html" %}
+  {% block titulo %}Crear Rifa{% endblock %}
+  {% block contenido %}
+  <div class="contenedor">
+  <h2>Crear nueva rifa</h2>
+
+  {% if mensaje %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      mostrarMensajeFlotante("{{ mensaje }}");
+    });
+  </script>
+  {% endif %}
+
+    <form method="POST">
+      <label>Nombre de la rifa</label>
+      <input type="text" name="nombre_rifa" required>
+
+      <label>Descripción del premio</label>
+      <textarea name="descripcion" rows="3" required></textarea>
+
+      <label>Avalúo del premio (COP)</label>
+      <input type="number" name="avaluo_premio" required>
+
+      <label>Tipo de cifra</label>
+      <select name="cifras" required>
+        <option value="2">2 cifras (00–99)</option>
+        <option value="3">3 cifras (000–999)</option>
+        <option value="4">4 cifras (0000–9999)</option>
+      </select>
+
+      <label>Cantidad de números del talonario</label>
+      <input type="number" name="cantidad_numeros" required>
+
+      <label>Precio por número</label>
+      <input type="number" name="precio_numero" required>
+
+      <label>Fecha del sorteo</label>
+      <input type="date" name="fecha_sorteo" required>
+
+      <label>Lotería o Rifa relacionada</label>
+      <input type="text" name="loteria" id="loteria" list="lista_loterias" placeholder="Ej: Lotería de Medellín" required>
+
+      <datalist id="lista_loterias">
+      <option value="Lotería de Medellín">
+      <option value="Lotería del Valle">
+      <option value="Lotería de Bogotá">
+      <option value="Lotería del Huila">
+      <option value="Lotería de Manizales">
+      <option value="Lotería del Tolima">
+      <option value="Lotería del Meta">
+      <option value="Lotería de Santander">
+      <option value="Baloto">
+      <option value="Chance">
+      <option value="Rifa local">
+      </datalist>
+
+      <hr>
+      <h3>💰 Cuentas del negocio</h3>
+      <button type="button" id="btn-agregar" onclick="mostrarFormularioCuenta('agregar')">➕ Agregar cuentas</button>
+      <button type="button" id="btn-actualizar" onclick="mostrarFormularioCuenta('actualizar')">✏️ Actualizar cuentas</button>
+
+      <div id="bloque-cuentas" style="display:none; margin-top:15px;">
+        <label>Número Nequi</label>
+        <input type="text" name="numero_nequi" value="{{ cuentas[0] if cuentas else '' }}" placeholder="Ej: 3001234567">
+
+        <label>Número Daviplata</label>
+        <input type="text" name="numero_daviplata" value="{{ cuentas[1] if cuentas else '' }}" placeholder="Ej: 3221234567">
+
+        <label>Cuenta o enlace PSE</label>
+        <input type="text" name="cuenta_pse" value="{{ cuentas[2] if cuentas else '' }}" placeholder="Ej: 123456789 - Banco X">
+      </div>
+
+      <button type="submit" class="boton-accion">📩 Guardar y generar talonario</button>
+    </form>
+
+      {% if enlace_rifa and numero_admin %}
+    <hr>
+    <label>🔗 Enlace para compartir:</label>
+    <input type="text" value="{{ request.host_url | trim('/') }}{{ enlace_rifa }}" readonly onclick="this.select()" style="font-size:15px; padding:10px; border:1px solid #ccc; border-radius:8px; width:100%;">
+
+    <button type="button"
+            onclick="compartirWhatsApp('{{ numero_admin }}', '{{ request.host_url | trim('/') }}{{ enlace_rifa }}')"
+            style="margin-top:10px; background-color:#25D366; color:white; border:none; padding:10px 16px; border-radius:8px; font-size:16px; cursor:pointer;">
+      📲 Compartir por WhatsApp
+    </button>
+
+    <p style="font-size:13px; color:gray;">Copia este enlace y compártelo en tus estados o redes sociales.</p>
+  {% endif %}
+
+
+    <hr>
+    <h3>🎙️ Instrucciones de voz (opcional)</h3>
+    <p>Puedes grabar un audio para explicar cómo participar en la rifa.</p>
+    <button type="button" onclick="grabarAudio()" style="padding:10px 20px; font-size:15px;">🎤 Grabar audio (máx. 30 seg)</button>
+    <audio id="reproductor" controls style="display:none; margin-top:15px;"></audio>
+    <a id="descargar" download="instrucciones_rifa.mp3" style="display:none; margin-top:10px; display:inline-block;">⬇️ Descargar audio</a>
+
+    <!-- MENSAJE FLOTANTE -->
+    <div id="mensaje-flotante" style="display:none;"></div>
+  </div>
+
+  <script>
+    function mostrarMensajeFlotante(mensaje) {
+      const div = document.getElementById("mensaje-flotante");
+      div.innerText = mensaje;
+      div.style.display = "block";
+      div.style.position = "fixed";
+      div.style.top = "50%";
+      div.style.left = "50%";
+      div.style.transform = "translate(-50%, -50%)";
+      div.style.backgroundColor = "#333";
+      div.style.color = "white";
+      div.style.padding = "16px 24px";
+      div.style.borderRadius = "10px";
+      div.style.boxShadow = "0 0 10px rgba(0,0,0,0.4)";
+      div.style.zIndex = "9999";
+      div.style.fontSize = "18px";
+      div.style.textAlign = "center";
+      div.style.maxWidth = "80%";
+      div.style.wordWrap = "break-word";
+      setTimeout(() => div.style.display = "none", 3000);
+    }
+
+    function compartirWhatsApp(numeroAdmin, enlaceRifa) {
+      const dominio = window.location.origin;
+      const enlaceCompleto = `${dominio}${enlaceRifa}`;
+      const numeroConCodigo = "57" + numeroAdmin.replace(/\D/g, "");
+      const mensaje = `¡Hola! Participo en una rifa increíble 🎁🎉\n\nHaz clic aquí para ver los números disponibles y participar:\n${enlaceCompleto}`;
+      const url = `https://wa.me/${numeroConCodigo}?text=${encodeURIComponent(mensaje)}`;
+      window.open(url, '_blank');
+    }
+
+    let grabador, audioBlob;
+    async function grabarAudio() {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  grabador = new MediaRecorder(stream);
+  const chunks = [];
+  grabador.ondataavailable = e => chunks.push(e.data);
+  grabador.onstop = () => {
+    audioBlob = new Blob(chunks, { type: 'audio/mp3' });
+    const url = URL.createObjectURL(audioBlob);
+    document.getElementById('reproductor').src = url;
+    document.getElementById('reproductor').style.display = 'block';
+    const descargar = document.getElementById('descargar');
+    descargar.href = url;
+    descargar.style.display = 'inline-block';
+  };
+  alert("🎤 Grabación iniciada. Tienes 30 segundos...");
+  grabador.start();
+  setTimeout(() => {
+    grabador.stop();
+    alert("✅ Grabación finalizada.");
+  }, 30000); // 30 segundos
+}
+
+
+    function mostrarFormularioCuenta(modo) {
+      const bloque = document.getElementById("bloque-cuentas");
+      const nequi = document.querySelector('input[name="numero_nequi"]').value.trim();
+      const daviplata = document.querySelector('input[name="numero_daviplata"]').value.trim();
+      const pse = document.querySelector('input[name="cuenta_pse"]').value.trim();
+
+      if (!formularioVisible || modo !== modoActual) {
+        bloque.style.display = "block";
+        formularioVisible = true;
+        modoActual = modo;
+        return;
+      }
+
+      fetch("/guardar-cuentas-negocio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nequi, daviplata, pse })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            mostrarMensajeFlotante("✅ Cuentas " + (modo === "agregar" ? "guardadas" : "actualizadas") + " correctamente");
+            bloque.style.display = "none";
+            formularioVisible = false;
+            modoActual = "";
+          } else {
+            mostrarMensajeFlotante("⚠️ Error al " + (modo === "agregar" ? "guardar" : "actualizar") + " cuentas");
+          }
+        })
+        .catch(() => mostrarMensajeFlotante("❌ Error de conexión al " + (modo === "agregar" ? "guardar" : "actualizar")));
+    }
+
+    let formularioVisible = false;
+    let modoActual = "";
+  </script>
+  {% endblock %}
+</body>
+</html>
