@@ -229,7 +229,7 @@
 
     function compartirWhatsApp(numeroAdmin, enlaceRifa) {
       const dominio = window.location.origin;
-      const enlaceCompleto = `${dominio}${enlaceRifa}`;
+      const enlaceCompleto = enlaceRifa.startsWith("http") ? enlaceRifa : `${dominio}/${enlaceRifa.replace(/^\/?/, '')}`;
       const numeroConCodigo = "57" + numeroAdmin.replace(/\D/g, "");
       const mensaje = `¡Hola! Participo en una rifa increíble 🎁🎉\n\nHaz clic aquí para ver los números disponibles y participar:\n${enlaceCompleto}`;
       const url = `https://wa.me/${numeroConCodigo}?text=${encodeURIComponent(mensaje)}`;
