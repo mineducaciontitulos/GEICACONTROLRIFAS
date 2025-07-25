@@ -28,7 +28,9 @@ def crear_cliente():
         usuario = f"admin_{slug.replace('-', '_')}"
 
         conn = obtener_conexion()
+        conn.row_factory = sqlite3.Row  # ✅ Esto convierte el resultado a tipo dict
         cursor = conn.cursor()
+
 
         # Verifica si el slug ya existe
         cursor.execute("SELECT id FROM negocio WHERE slug = ?", (slug,))
