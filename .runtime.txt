@@ -1,0 +1,6 @@
+build:
+  env: 
+    - name: RENDER_PYTHON_VERSION
+      value: 3.10.13
+
+start: gunicorn app:app
