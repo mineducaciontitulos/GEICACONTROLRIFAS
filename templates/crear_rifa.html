@@ -194,13 +194,7 @@
   {% endif %}
 
 
-    <hr>
-    <h3>🎙️ Instrucciones de voz (opcional)</h3>
-    <p>Puedes grabar un audio para explicar cómo participar en la rifa.</p>
-    <button type="button" onclick="grabarAudio()" style="padding:10px 20px; font-size:15px;">🎤 Grabar audio (máx. 30 seg)</button>
-    <audio id="reproductor" controls style="display:none; margin-top:15px;"></audio>
-    <a id="descargar" download="instrucciones_rifa.mp3" style="display:none; margin-top:10px; display:inline-block;">⬇️ Descargar audio</a>
-
+    
     <!-- MENSAJE FLOTANTE -->
     <div id="mensaje-flotante" style="display:none;"></div>
   </div>
@@ -236,30 +230,7 @@
       window.open(url, '_blank');
     }
 
-    let grabador, audioBlob;
-    async function grabarAudio() {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  grabador = new MediaRecorder(stream);
-  const chunks = [];
-  grabador.ondataavailable = e => chunks.push(e.data);
-  grabador.onstop = () => {
-    audioBlob = new Blob(chunks, { type: 'audio/mp3' });
-    const url = URL.createObjectURL(audioBlob);
-    document.getElementById('reproductor').src = url;
-    document.getElementById('reproductor').style.display = 'block';
-    const descargar = document.getElementById('descargar');
-    descargar.href = url;
-    descargar.style.display = 'inline-block';
-  };
-  alert("🎤 Grabación iniciada. Tienes 30 segundos...");
-  grabador.start();
-  setTimeout(() => {
-    grabador.stop();
-    alert("✅ Grabación finalizada.");
-  }, 30000); // 30 segundos
-}
-
-
+    
     function mostrarFormularioCuenta(modo) {
       const bloque = document.getElementById("bloque-cuentas");
       const nequi = document.querySelector('input[name="numero_nequi"]').value.trim();
