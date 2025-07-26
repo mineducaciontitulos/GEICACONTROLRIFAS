@@ -1,17 +1,23 @@
 import sqlite3
 from datetime import datetime
 from database.conexion import obtener_conexion    
+import uuid
+from unidecode import unidecode
 
 def crear_rifa(datos_rifa, negocio_id):
     conn = obtener_conexion()
     cursor = conn.cursor()
 
+    # Generar slug único y seguro
+    nombre_sanitizado = unidecode(datos_rifa['nombre_rifa'].lower().replace(" ", "-"))
+    slug_rifa = f"{nombre_sanitizado}-{str(uuid.uuid4())[:6]}"
+
     cursor.execute('''
         INSERT INTO rifas (
             negocio_id, nombre_rifa, descripcion, avaluo_premio, cifras,
             cantidad_numeros, precio_numero, fecha_sorteo, fecha_creacion,
-            nequi, daviplata, pse
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            nequi, daviplata, pse, slug
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         negocio_id,
         datos_rifa['nombre_rifa'],
@@ -24,7 +30,8 @@ def crear_rifa(datos_rifa, negocio_id):
         datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         datos_rifa.get('nequi', ''),
         datos_rifa.get('daviplata', ''),
-        datos_rifa.get('pse', '')
+        datos_rifa.get('pse', ''),
+        slug_rifa
     ))
 
     rifa_id = cursor.lastrowid
@@ -36,7 +43,8 @@ def crear_rifa(datos_rifa, negocio_id):
     conn.commit()
     conn.close()
 
-    return rifa_id
+    # Retornar también el slug (sin afectar nada más)
+    return rifa_id, slug_rifa
 
 
 def obtener_rifa_por_id(rifa_id):
