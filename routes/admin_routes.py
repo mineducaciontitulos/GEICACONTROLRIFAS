@@ -33,7 +33,7 @@ def mis_rifas():
         if rifa["fecha_creacion"]:
             fecha_creacion = datetime.strptime(rifa["fecha_creacion"], "%Y-%m-%d %H:%M:%S")
             if datetime.now() - fecha_creacion < timedelta(hours=24):
-                enlace = f"/rifa/{rifa['id']}"
+                enlace = f"/rifa/{rifa['slug']}"
 
         rifas_con_enlace.append({
             **rifa,
@@ -108,8 +108,7 @@ def crear_rifa_view():
 
         # Datos de la rifa
         nombre_rifa = request.form['nombre_rifa']
-        nombre_sanitizado = unidecode.unidecode(nombre_rifa.lower().replace(" ", "-"))
-        slug_rifa = f"{nombre_sanitizado}-{str(uuid.uuid4())[:6]}"
+        slug_rifa = generar_slug_rifa(nombre_rifa)
         descripcion = request.form['descripcion']
         avaluo = int(request.form['avaluo_premio'])
         cifras = int(request.form['cifras'])

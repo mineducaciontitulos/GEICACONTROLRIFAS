@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
 )
 ''')
 
-# Rifas (actualizada con fecha_creacion)
+# Tabla rifas (actualizada con slug y lotería)
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS rifas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,10 +51,12 @@ CREATE TABLE IF NOT EXISTS rifas (
     cantidad_numeros INTEGER,
     precio_numero INTEGER,
     fecha_sorteo TEXT,
-    numero_ganador TEXT,            
+    numero_ganador TEXT,
     estado TEXT DEFAULT 'activa',
     fecha_creacion TEXT,
-    FOREIGN KEY (negocio_id) REFERENCES negocios(id)
+    loteria TEXT,
+    slug TEXT UNIQUE,
+    FOREIGN KEY (negocio_id) REFERENCES negocio(id)
 )
 ''')
 
@@ -110,8 +112,6 @@ CREATE TABLE IF NOT EXISTS reservas (
     FOREIGN KEY (rifa_id) REFERENCES rifas(id)
 )
 ''')
-
-cursor.execute("ALTER TABLE rifas ADD COLUMN loteria TEXT")
 
 conn.commit()
 conn.close()
