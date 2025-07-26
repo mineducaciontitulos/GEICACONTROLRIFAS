@@ -8,6 +8,9 @@ from models.rifa import obtener_rifas_por_slug, obtener_historial_por_slug
 from models.negocio import obtener_negocio_por_slug
 from models.rifa import obtener_datos_ganador
 from utils.generador_codigo import generar_slug_rifa
+import uuid
+import unidecode
+
 
 
 admin_routes = Blueprint('admin', __name__)
@@ -105,6 +108,8 @@ def crear_rifa_view():
 
         # Datos de la rifa
         nombre_rifa = request.form['nombre_rifa']
+        nombre_sanitizado = unidecode.unidecode(nombre_rifa.lower().replace(" ", "-"))
+        slug_rifa = f"{nombre_sanitizado}-{str(uuid.uuid4())[:6]}"
         descripcion = request.form['descripcion']
         avaluo = int(request.form['avaluo_premio'])
         cifras = int(request.form['cifras'])
@@ -119,11 +124,11 @@ def crear_rifa_view():
 
         # Insertar rifa
         cursor.execute('''
-            INSERT INTO rifas 
-            (negocio_id, nombre_rifa, descripcion, avaluo_premio, cifras, cantidad_numeros, precio_numero, fecha_sorteo, fecha_creacion, loteria)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           INSERT INTO rifas 
+           (negocio_id, nombre_rifa, descripcion, avaluo_premio, cifras, cantidad_numeros, precio_numero, fecha_sorteo, fecha_creacion, loteria, slug)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
-            negocio_id, nombre_rifa, descripcion, avaluo, cifras, cantidad, precio, fecha, fecha_creacion, loteria,
+           negocio_id, nombre_rifa, descripcion, avaluo, cifras, cantidad, precio, fecha, fecha_creacion, loteria, slug_rifa
         ))
 
         rifa_id = cursor.lastrowid
@@ -152,7 +157,7 @@ def crear_rifa_view():
         conn.close()
 
         mensaje = "✅ Rifa creada y cuentas actualizadas con éxito."
-        enlace_rifa = url_for('admin.panel_compras_admin', slug=slug_negocio)
+        enlace_rifa = f"https://geicacontrolrifas.onrender.com/rifa/{slug_rifa}"
         print("✅ ENLACE GENERADO PARA WHATSAPP:", enlace_rifa)
 
         return render_template(

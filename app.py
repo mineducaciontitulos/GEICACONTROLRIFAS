@@ -425,7 +425,38 @@ def buscar_ganador():
         })
     else:
         return jsonify({"encontrado": False})
-        
+    
+@app.route('/rifa/<slug>')
+def mostrar_rifa(slug):
+    conn = obtener_conexion()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    # Buscar la rifa usando el nuevo slug único
+    cursor.execute("SELECT * FROM rifas WHERE slug = %s", (slug,))
+    rifa = cursor.fetchone()
+
+    if not rifa:
+        return render_template("error.html", mensaje="❌ Rifa no encontrada.")
+
+    # Obtener información del negocio
+    cursor.execute("SELECT * FROM negocio WHERE id = %s", (rifa['negocio_id'],))
+    negocio = cursor.fetchone()
+
+    # Obtener números disponibles para esta rifa
+    cursor.execute("SELECT * FROM numeros_rifa WHERE rifa_id = %s", (rifa['id'],))
+    numeros = cursor.fetchall()
+
+    conn.close()
+
+    return render_template(
+        'ver_rifa_comprador.html',
+        rifas=[rifa],  # Aunque es solo una, se pasa como lista para mantener compatibilidad
+        numeros_por_rifa={rifa['id']: numeros},
+        negocio=negocio,
+        fecha_actual=datetime.now().date().isoformat(),
+        admin=False
+    )
+       
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

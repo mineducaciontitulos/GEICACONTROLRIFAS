@@ -59,7 +59,8 @@ CREATE TABLE IF NOT EXISTS rifas (
     numero_ganador TEXT,
     estado TEXT DEFAULT 'activa',
     fecha_creacion TEXT,
-    loteria TEXT
+    loteria TEXT,
+    slug TEXT UNIQUE           
 )
 ''')
 
@@ -111,6 +112,14 @@ CREATE TABLE IF NOT EXISTS reservas (
     estado TEXT DEFAULT 'pendiente'
 )
 ''')
+
+# Agregar la columna slug si no existe
+try:
+    cursor.execute("ALTER TABLE rifas ADD COLUMN slug TEXT UNIQUE;")
+    print(" Columna 'slug' agregada a la tabla rifas.")
+except Exception as e:
+    print(" La columna 'slug' ya existe o hubo un error leve:", e)
+
 
 conn.commit()
 cursor.close()
