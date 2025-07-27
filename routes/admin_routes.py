@@ -10,6 +10,9 @@ from models.rifa import obtener_datos_ganador
 from utils.generador_codigo import generar_slug_rifa
 import uuid
 import unidecode
+from flask import redirect, url_for
+from random import sample
+
 
 
 
@@ -108,7 +111,8 @@ def crear_rifa_view():
 
         # Datos de la rifa
         nombre_rifa = request.form['nombre_rifa']
-        slug_rifa = generar_slug_rifa(nombre_rifa)
+        nombre_sanitizado = unidecode.unidecode(nombre_rifa.lower().replace(" ", "-"))
+        slug_rifa = f"{nombre_sanitizado}-{str(uuid.uuid4())[:8]}"
         descripcion = request.form['descripcion']
         avaluo = int(request.form['avaluo_premio'])
         cifras = int(request.form['cifras'])
@@ -118,17 +122,25 @@ def crear_rifa_view():
         loteria = request.form.get('loteria', '').strip()
         fecha_creacion = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # Generar el slug para compartir la rifa
-        slug_rifa = generar_slug_rifa(nombre_rifa)
-
         # Insertar rifa
-        cursor.execute('''
-           INSERT INTO rifas 
-           (negocio_id, nombre_rifa, descripcion, avaluo_premio, cifras, cantidad_numeros, precio_numero, fecha_sorteo, fecha_creacion, loteria, slug)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-           negocio_id, nombre_rifa, descripcion, avaluo, cifras, cantidad, precio, fecha, fecha_creacion, loteria, slug_rifa
+        try:
+           cursor.execute('''
+              INSERT INTO rifas 
+              (negocio_id, nombre_rifa, descripcion, avaluo_premio, cifras, cantidad_numeros, precio_numero, fecha_sorteo, fecha_creacion, loteria, slug)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+              negocio_id, nombre_rifa, descripcion, avaluo, cifras, cantidad, precio, fecha, fecha_creacion, loteria, slug_rifa
         ))
+        except sqlite3.IntegrityError:
+            conn.close()
+            mensaje = "❌ Ya existe una rifa con ese enlace. Intenta con otro nombre."
+            return render_template(
+             'crear_rifa.html',
+              mensaje=mensaje,
+              cuentas=cuentas,
+              numero_admin=numero_admin,
+              negocio=negocio
+            )
 
         rifa_id = cursor.lastrowid
 
@@ -155,8 +167,9 @@ def crear_rifa_view():
         conn.commit()
         conn.close()
 
+        
         mensaje = "✅ Rifa creada y cuentas actualizadas con éxito."
-        enlace_rifa = f"https://geicacontrolrifas.onrender.com/rifa/{slug_rifa}"
+        enlace_rifa = url_for('mostrar_rifa', slug=slug_rifa, _external=True)
         print("✅ ENLACE GENERADO PARA WHATSAPP:", enlace_rifa)
 
         return render_template(
@@ -305,10 +318,6 @@ def mostrar_ganador(slug, numero):
         return render_template('ganador.html', ganador=ganador)
     else:
         return "❌ Número no encontrado para este negocio", 404
-
-@admin_routes.route('/crear-rifa')
-def crear_rifa():
-    return render_template('crear_rifa.html')
     
 
 @admin_routes.route('/panel-compras-admin/<slug>') 

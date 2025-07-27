@@ -208,8 +208,8 @@
 
       <h2>Gestión Total del Negocio</h2>
       <div class="acciones">
-        <a href="{{ url_for('admin.crear_rifa') }}" class="btn-rifa">🎟️ Crear Nueva Rifa</a>
-       <a href="{{ url_for('admin.ver_rifas_admin_slug', slug=negocio.slug) }}" class="boton">📋 Ver rifas creadas</a>
+        <a href="{{ url_for('admin.crear_rifa_view') }}" class="btn-rifa">🎟️ Crear Nueva Rifa</a>
+        <a href="{{ url_for('admin.ver_rifas_admin_slug', slug=negocio.slug) }}" class="boton">📋 Ver rifas creadas</a>
         <a href="{{ url_for('historial_ganadores', slug=negocio['slug']) }}" class="boton">📈 Ver historial de ganadores</a>
         <a href="{{ url_for('admin.panel_compras_admin', slug=negocio.slug) }}" class="boton">
        🛒 Ir al panel de compras
