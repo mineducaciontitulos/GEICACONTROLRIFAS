@@ -17,6 +17,8 @@ from models.rifa import obtener_rifas_por_slug, obtener_datos_ganador
 from utils.whatsapp_api import enviar_mensaje_whatsapp
 from routes.admin_routes import admin_routes
 from flask import jsonify
+import psycopg2
+import psycopg2.extras
 
 
 app = Flask(__name__)
@@ -429,33 +431,35 @@ def buscar_ganador():
 @app.route('/rifa/<slug>')
 def mostrar_rifa(slug):
     conn = obtener_conexion()
-    cursor = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cursor = conn.cursor()
 
     # Buscar la rifa usando el nuevo slug único
-    cursor.execute("SELECT * FROM rifas WHERE slug = %s", (slug,))
+    cursor.execute("SELECT * FROM rifas WHERE slug = ?", (slug,))
     rifa = cursor.fetchone()
 
     if not rifa:
         return render_template("error.html", mensaje="❌ Rifa no encontrada.")
 
     # Obtener información del negocio
-    cursor.execute("SELECT * FROM negocio WHERE id = %s", (rifa['negocio_id'],))
+    cursor.execute("SELECT * FROM negocio WHERE id = ?", (rifa['negocio_id'],))
     negocio = cursor.fetchone()
 
     # Obtener números disponibles para esta rifa
-    cursor.execute("SELECT * FROM numeros_rifa WHERE rifa_id = %s", (rifa['id'],))
+    cursor.execute("SELECT * FROM numeros_rifa WHERE rifa_id = ?", (rifa['id'],))
     numeros = cursor.fetchall()
+
 
     conn.close()
 
     return render_template(
         'ver_rifa_comprador.html',
-        rifas=[rifa],  # Aunque es solo una, se pasa como lista para mantener compatibilidad
-        numeros_por_rifa={rifa['id']: numeros},
+        rifa=rifa,
+        numeros=numeros,
         negocio=negocio,
         fecha_actual=datetime.now().date().isoformat(),
         admin=False
     )
+
        
 
 if __name__ == '__main__':

@@ -170,8 +170,7 @@ def crear_rifa_view():
         
         mensaje = "✅ Rifa creada y cuentas actualizadas con éxito."
         enlace_rifa = url_for('mostrar_rifa', slug=slug_rifa, _external=True)
-        print("✅ ENLACE GENERADO PARA WHATSAPP:", enlace_rifa)
-
+     
         return render_template(
             'crear_rifa.html',
             mensaje=mensaje,
@@ -191,9 +190,8 @@ def crear_rifa_view():
         numero_admin=numero_admin,
         mostrar_campos_pago=mostrar_campos_pago,
         cuentas=cuentas,
-        negocio=negocio  # ✅ También se pasa aquí para mostrar el nombre del negocio
+        negocio=negocio
     )
-
 
 @admin_routes.route('/configurar-metodos-pago', methods=['GET'])
 def configurar_metodos_pago():

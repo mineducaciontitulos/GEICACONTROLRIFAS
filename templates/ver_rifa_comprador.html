@@ -373,7 +373,7 @@
         </div>
 
         <div class="talonario" id="talonario-{{ rifa['id'] }}">
-          {% for num in numeros_por_rifa[rifa['id']] %}
+          {% for numero in numeros %}
             {% if num['estado'] == 'disponible' %}
               <div class="numero disponible" data-numero="{{ num['numero'] }}" onclick="seleccionarNumero(this)">{{ num['numero'] }}</div>
             {% else %}

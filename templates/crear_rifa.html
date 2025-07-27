@@ -182,11 +182,11 @@
       {% if enlace_rifa and numero_admin %}
     <hr>
     <label>🔗 Enlace para compartir:</label>
-    <input type="text" value="{{ request.host_url | trim('/') }}{{ enlace_rifa }}" readonly onclick="this.select()" style="font-size:15px; padding:10px; border:1px solid #ccc; border-radius:8px; width:100%;">
+    <input type="text" value="{{ enlace_rifa }}" readonly onclick="this.select()" style="font-size:15px; padding:10px; border:1px solid #ccc; border-radius:8px; width:100%;">
 
     <button type="button"
-            onclick="compartirWhatsApp('{{ numero_admin }}', '{{ request.host_url | trim('/') }}{{ enlace_rifa }}')"
-            style="margin-top:10px; background-color:#25D366; color:white; border:none; padding:10px 16px; border-radius:8px; font-size:16px; cursor:pointer;">
+        onclick="compartirWhatsApp('{{ numero_admin }}', '{{ enlace_rifa }}')"
+        style="margin-top:10px; background-color:#25D366; color:white; border:none; padding:10px 16px; border-radius:8px; font-size:16px; cursor:pointer;">
       📲 Compartir por WhatsApp
     </button>
 
