@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header + acciones -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="m-0">Panel — {{ negocio["nombre_negocio"] }}</h2>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-light" href="{{ url_for('crear_rifa') }}">+ Crear Rifa</a>
+      <a class="btn btn-primary" href="{{ url_for('actualizar_rifas') }}">✎ Actualizar Rifas</a>
+      <a class="btn btn-outline-info" href="{{ url_for('ver_rifas') }}">📋 Ver Rifas</a>
+      <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">⛔ Cerrar Sesión</a>
+    </div>
+  </div>
+
+  <!-- Mensaje de bienvenida -->
+  <div class="glass p-4 mb-4">
+    <p class="mb-0 text-secondary">
+      Bienvenido, <strong>{{ negocio["nombre_negocio"] }}</strong>. Aquí verás y gestionarás tus rifas.
+    </p>
+  </div>
+
+  <!-- Cards de estado -->
+  <div class="row g-3 mb-4">
+    {% set total = (rifas | sum(attribute='total')) if rifas else 0 %}
+    {% set vendidos = (rifas | sum(attribute='vendidos')) if rifas else 0 %}
+    {% set restantes = (total - vendidos) if total else 0 %}
+    {% set ingreso_estimado = (rifas | sum(attribute='valor_numero')) * vendidos if rifas else 0 %}
+
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-stat">
+        <div class="label">Números Totales</div>
+        <div class="value">{{ total }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-stat">
+        <div class="label">Vendidos</div>
+        <div class="value">{{ vendidos }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-stat">
+        <div class="label">Disponibles</div>
+        <div class="value">{{ restantes }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-6 col-lg-3">
+      <div class="card-stat">
+        <div class="label">Ingreso Estimado</div>
+        <div class="value">$ {{ "{:,}".format(ingreso_estimado).replace(",", ".") }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista rápida de rifas (compacta y legible) -->
+  <div class="glass p-3">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="m-0">Tus Rifas</h5>
+      <a class="btn btn-sm btn-outline-light" href="{{ url_for('ver_rifas') }}">Ver todas →</a>
+    </div>
+
+    {% if rifas and rifas|length > 0 %}
+    <div class="table-responsive">
+      <table class="table table-dark table-borderless align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Rifa</th>
+            <th>Valor Nº</th>
+            <th>Total</th>
+            <th>Vendidos</th>
+            <th>Estado</th>
+            <th>Link público</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rifas %}
+          <tr>
+            <td class="fw-semibold">{{ r["nombre"] }}</td>
+            <td>$ {{ "{:,}".format(r["valor_numero"]).replace(",", ".") }}</td>
+            <td>{{ r["total"] }}</td>
+            <td>{{ r["vendidos"] }}</td>
+            <td>
+              <span class="badge {% if r['estado']=='activa' %}bg-success{% else %}bg-secondary{% endif %}">
+                {{ r["estado"]|capitalize }}
+              </span>
+            </td>
+            <td class="small text-truncate" style="max-width:220px;">
+              {{ request.host_url.rstrip('/') }}/r/{{ r["link_publico"] }}
+            </td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-info" target="_blank"
+                 href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}">🌐 Abrir</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="text-secondary">Aún no tienes rifas. Crea la primera con el botón “+ Crear Rifa”.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

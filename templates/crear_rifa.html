@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">🎟️ Crear Nueva Rifa</h2>
+    <a href="{{ url_for('panel') }}" class="btn btn-outline-secondary">⬅️ Volver al Panel</a>
+  </div>
+
+  <form class="glass p-4" action="{{ url_for('crear_rifa') }}" method="POST" enctype="multipart/form-data">
+    <div class="row g-3">
+
+      <!-- NOMBRE (backend: nombre) -->
+      <div class="col-12 col-md-6">
+        <label class="form-label">Título de la rifa *</label>
+        <input class="form-control" name="nombre" required placeholder="Moto Yamaha FZ 2.0">
+      </div>
+
+      <!-- AVALUO (backend: avaluo) -->
+      <div class="col-12 col-md-3">
+        <label class="form-label">Avalúo del premio (COP)</label>
+        <input type="number" class="form-control" name="avaluo" min="0" step="1000" placeholder="15000000">
+      </div>
+
+      <!-- LOTERÍA (backend: nombre_loteria) -->
+      <div class="col-12 col-md-3">
+        <label class="form-label">Lotería / Sorteo*</label>
+        <input class="form-control" name="nombre_loteria" required placeholder="Lotería de Bogotá">
+      </div>
+
+      <!-- DESCRIPCIÓN (backend: descripcion) -->
+      <div class="col-12">
+        <label class="form-label">Descripción del premio *</label>
+        <textarea class="form-control" name="descripcion" rows="3" required placeholder="Modelo, color, condiciones, entrega..."></textarea>
+      </div>
+
+      <!-- CIFRAS (backend: cifras) -->
+      <div class="col-12 col-md-4">
+        <label class="form-label">Cantidad de cifras *</label>
+        <select class="form-select" name="cifras" id="cifras" required>
+          <option value="2" selected>2 cifras (00–99)</option>
+          <option value="3">3 cifras (000–999)</option>
+          <option value="4">4 cifras (0000–9999)</option>
+        </select>
+        <small class="text-secondary d-block mt-1">Si eliges 2 cifras, la cantidad será 100 fija.</small>
+      </div>
+
+      <!-- CANTIDAD (backend: cantidad_numeros) -->
+      <div class="col-12 col-md-4">
+        <label class="form-label">Cantidad de números *</label>
+        <input type="number" class="form-control" name="cantidad_numeros" id="cantidad" min="1" value="100" required>
+      </div>
+
+      <!-- VALOR NÚMERO (backend: valor_numero) -->
+      <div class="col-12 col-md-4">
+        <label class="form-label">Precio por número (COP) *</label>
+        <input type="number" class="form-control" name="valor_numero" min="1000" step="500" required placeholder="10000">
+      </div>
+
+      <!-- IMAGEN (backend: imagen_premio) -->
+      <div class="col-12 col-md-6">
+        <label class="form-label">Imagen del premio</label>
+        <input type="file" class="form-control" name="imagen_premio" accept="image/*" id="imagen">
+        <small class="text-secondary">Opcional pero recomendado (JPG/PNG/WEBP).</small>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="col-12 col-md-6 d-flex align-items-end">
+        <img id="preview" alt="Vista previa" class="rounded border d-none" style="max-height:140px;">
+      </div>
+
+    </div>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="submit" class="btn btn-success">✅ Crear Rifa</button>
+    </div>
+  </form>
+
+</div>
+
+<script>
+  // fijar cantidad=100 cuando son 2 cifras
+  const sel = document.getElementById('cifras');
+  const cant = document.getElementById('cantidad');
+  const syncCantidad = () => {
+    if (sel.value === '2') { cant.value = 100; cant.readOnly = true; }
+    else { cant.readOnly = false; }
+  };
+  sel.addEventListener('change', syncCantidad);
+  syncCantidad();
+
+  // preview imagen
+  const inputImg = document.getElementById('imagen');
+  const preview = document.getElementById('preview');
+  inputImg?.addEventListener('change', (e) => {
+    const f = e.target.files?.[0];
+    if (!f) { preview.classList.add('d-none'); return; }
+    const url = URL.createObjectURL(f);
+    preview.src = url;
+    preview.classList.remove('d-none');
+  });
+</script>
+{% endblock %}

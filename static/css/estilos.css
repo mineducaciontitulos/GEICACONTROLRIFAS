@@ -1,0 +1,307 @@
+body {
+    background-color: #f2f2f2;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+h1, h2 {
+    text-align: center;
+    color: #333;
+}
+
+.talonario {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 20px auto;
+    max-width: 700px;
+}
+
+.numero {
+    width: 70px;
+    height: 70px;
+    margin: 5px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 18px;
+    border: 2px solid #888;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+.numero:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.numero.seleccionado {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+.botones {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+/* Inputs y selects con look glass */
+.form-control, .form-select{
+  background: rgba(255,255,255,.08) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  color: #eef3ff !important;
+  border-radius: 12px !important;
+}
+.form-control::placeholder{ color: rgba(233,239,255,.65) !important; }
+.form-control:focus, .form-select:focus{
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 .2rem rgba(147,197,253,.25) !important;
+}
+
+/* Botón principal más vistoso */
+.btn-primary{
+  border-radius:12px !important;
+  padding:.65rem 1.1rem !important;
+  background: linear-gradient(45deg,#00b4d8,#0077b6) !important;
+  border: none !important;
+  box-shadow: 0 4px 14px rgba(0,180,216,.35) !important;
+}
+.btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,180,216,.55) !important;
+}
+
+/* Tabla con hover suave */
+.table-dark tbody tr:hover{ background: rgba(255,255,255,.05) !important; }
+/* agrega a estilos.css */
+.form-actions-right{ display:flex; justify-content:flex-end; }
+.mt-tight{ margin-top:.35rem; }
+.form-label{ color:#cfd8ff; font-weight:600; letter-spacing:.2px }
+.glass{ border-radius:16px }
+.table-dark tbody tr:hover{ background:rgba(255,255,255,.06) }
+
+/* Mejorar contraste de texto sobre fondo oscuro */
+.text-secondary { color: rgba(230,240,255,.75) !important; }
+
+/* Paneles “glass” */
+.glass {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+/* Cards de métricas */
+.card-stat{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 16px;
+  height: 100%;
+}
+.card-stat .label{
+  font-size:.85rem; letter-spacing:.3px; color: rgba(230,240,255,.75);
+}
+.card-stat .value{
+  font-size:1.6rem; font-weight:800; line-height:1.1;
+  color:#eaf2ff; margin-top:6px;
+}
+
+/* Tablas más legibles */
+.table-dark tbody tr:hover{ background: rgba(255,255,255,.06) !important; }
+
+/* Botones principales con buen punch */
+.btn-primary{
+  background: linear-gradient(45deg,#00b4d8,#0077b6) !important;
+  border: none !important; border-radius: 12px !important;
+  box-shadow: 0 6px 18px rgba(0,180,216,.35) !important;
+}
+.btn-primary:hover{ transform: translateY(-1px); }
+
+/* Contenido truncado bonito en celdas largas */
+.text-truncate { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+/* ====== Contraste global y tipografía ====== */
+:root{
+  --fg-strong:#eef3ff;            /* texto principal */
+  --fg:#e6eeff;                    /* texto normal */
+  --fg-muted:rgba(230,240,255,.82);/* texto secundario */
+  --fg-soft:rgba(230,240,255,.65); /* ayudas / placeholders */
+  --glass-bg:rgba(255,255,255,.07);
+  --glass-brd:rgba(255,255,255,.16);
+}
+
+body, p, span, li { color: var(--fg); }
+h1,h2,h3,h4,h5,h6 { color: var(--fg-strong); }
+
+/* ====== Paneles y tarjetas ====== */
+.glass{
+  background: var(--glass-bg);
+  border:1px solid var(--glass-brd);
+  border-radius:14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px rgba(0,0,0,.28);
+}
+
+.card-stat .label{ color: var(--fg-soft); }
+.card-stat .value{ color: var(--fg-strong); }
+
+/* ====== Formularios ====== */
+.form-label{ color: var(--fg); font-weight:600; letter-spacing:.2px; }
+.form-control, .form-select{
+  color: var(--fg-strong) !important;
+  background: rgba(255,255,255,.10) !important;
+  border:1px solid rgba(255,255,255,.28) !important;
+}
+.form-control::placeholder{ color: var(--fg-soft) !important; }
+.form-control:focus, .form-select:focus{
+  border-color:#9ec5fe !important;
+  box-shadow: 0 0 0 .2rem rgba(158,197,254,.25) !important;
+}
+
+/* ====== Tablas ====== */
+.table-dark thead th{ color: var(--fg-strong); }
+.table-dark tbody td{ color: var(--fg-muted); }
+.table-dark tbody tr:hover{ background: rgba(255,255,255,.08) !important; }
+
+/* ====== Botones ====== */
+.btn{ color: var(--fg-strong); }
+.btn-outline-light{
+  color: var(--fg-strong) !important;
+  border-color: rgba(255,255,255,.55) !important;
+}
+.btn-outline-light:hover{
+  background: rgba(255,255,255,.12) !important;
+}
+.btn-outline-info{
+  color:#bfe3ff !important;
+  border-color:#bfe3ff !important;
+}
+.btn-outline-danger{
+  color:#ffb3b3 !important;
+  border-color:#ffb3b3 !important;
+}
+
+/* ====== Links/ayudas ====== */
+a, .link, .text-secondary{ color: var(--fg-muted) !important; }
+html{ font-size: 16.5px; } /* opcional */
+
+/* Textos secundarios en tema claro */
+.text-secondary{ color:#6b7280 !important; }
+
+/* ===== Bolas estilo Baloto ===== */
+.grid-numeros{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(56px,1fr));
+  gap: 12px;
+}
+
+.num-bola{
+  display:flex; align-items:center; justify-content:center;
+  width:56px; height:56px; border-radius:50%;
+  font-weight:800; font-size:1rem; letter-spacing:.5px;
+  border:2px solid #2563eb;           /* azul borde base */
+  color:#2563eb;                       /* texto base */
+  background:#fff;                     /* fondo base */
+  box-shadow: 0 4px 10px rgba(0,0,0,.06);
+  transition: transform .12s ease, box-shadow .12s ease, background .12s, color .12s, border-color .12s;
+  user-select:none; cursor:pointer;
+}
+.num-bola:hover{ transform: translateY(-1px); box-shadow:0 6px 14px rgba(0,0,0,.08); }
+
+/* Estados del backend: disponible / reservado / pagado */
+.num-bola.disponible{ background:#fff; color:#2563eb; border-color:#2563eb; }
+.num-bola.reservado{ background:#fff7ed; color:#b45309; border-color:#f59e0b; }   /* ámbar */
+.num-bola.pagado   { background:#e5e7eb; color:#374151; border-color:#9ca3af; cursor:not-allowed; }
+
+/* Selección del usuario (opcional, si permites elegir números) */
+.num-bola.selected{ background:#2563eb; color:#fff; border-color:#1e40af; }
+
+/* Accesibilidad móvil */
+@media (max-width: 480px){
+  .grid-numeros{ gap:10px; }
+  .num-bola{ width:50px; height:50px; font-size:.95rem; }
+}
+
+/* ===== Flashes (mensajes) ===== */
+.flash-stack{
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+  z-index: 9999; display: flex; flex-direction: column; gap: 12px;
+  max-width: 92vw;
+}
+.flash{
+  background: #dcfce7; color: #166534; /* success por defecto */
+  padding: 12px 14px; border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.15);
+  display: flex; align-items: center; gap: 12px;
+  transition: opacity .3s ease, transform .3s ease;
+}
+.flash-success{ background:#dcfce7; color:#166534; }
+.flash-info   { background:#dbeafe; color:#1e3a8a; }
+.flash-warning{ background:#fef3c7; color:#92400e; }
+.flash-danger { background:#fee2e2; color:#991b1b; }
+.flash-close{
+  background: transparent; border: 0; cursor: pointer;
+  font-size: 18px; line-height: 1; color: inherit; opacity:.75;
+}
+.flash-close:hover{ opacity: 1; }
+
+/* ===== Acciones de tabla (separación real) ===== */
+.actions{
+  display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap;
+}
+
+/* ===== Tabla responsiva mejorada ===== */
+.table{ min-width: 880px; }           /* fuerza scroll horizontal si hace falta */
+.table td, .table th{ vertical-align: middle; }
+.table .text-truncate{ max-width: 260px; }
+
+@media (max-width: 992px){
+  .table{ min-width: 760px; }
+  .table .text-truncate{ max-width: 220px; }
+}
+@media (max-width: 768px){
+  .table{ min-width: 680px; }
+  .table .text-truncate{ max-width: 180px; }
+}
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.table{ min-width: 880px; }
+.table td, .table th{ vertical-align: middle; }
+.table .text-truncate{ max-width: 260px; }
+
+@media (max-width: 992px){
+  .table{ min-width: 760px; }
+  .table .text-truncate{ max-width: 220px; }
+}
+@media (max-width: 768px){
+  .table{ min-width: 680px; }
+  .table .text-truncate{ max-width: 180px; }
+}
+

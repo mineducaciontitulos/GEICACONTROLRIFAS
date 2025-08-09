@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">🛠️ Actualizar Rifas Activas</h2>
+    <a href="{{ url_for('panel') }}" class="btn btn-outline-light">⬅️ Volver al Panel</a>
+  </div>
+
+  <div class="glass p-3">
+    {% if rifas and rifas|length > 0 %}
+      <div class="table-responsive">
+        <table class="table table-dark table-borderless align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th class="text-end">Valor Nº</th>
+              <th class="text-center">Cifras</th>
+              <th class="text-center">Cantidad</th>
+              <th>Estado</th>
+              <th class="text-end" style="width:140px">Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rifas %}
+            <tr>
+              <td>
+                <div class="fw-semibold">{{ r["nombre"] }}</div>
+                <div class="small text-secondary text-truncate" style="max-width:420px;">
+                  {{ r["descripcion"] or "—" }}
+                </div>
+              </td>
+              <td class="text-end">$ {{ "{:,}".format(r["valor_numero"]|int).replace(",", ".") }}</td>
+              <td class="text-center">{{ r["cifras"] }}</td>
+              <td class="text-center">{{ r["cantidad_numeros"] }}</td>
+              <td>
+                <span class="badge {% if r['estado']=='activa' %}bg-success{% else %}bg-secondary{% endif %}">
+                  {{ r["estado"]|capitalize }}
+                </span>
+              </td>
+              <td class="text-end">
+                <!-- Si ya tienes la ruta de edición, déjala así; si no, cámbiala a url_for('ver_rifas') -->
+                <a href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}" class="btn btn-primary btn-sm">
+                ✏️ Editar
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-secondary">No hay rifas activas para actualizar.</div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

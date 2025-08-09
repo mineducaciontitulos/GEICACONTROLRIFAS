@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificar Ganador</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
+</head>
+<body>
+    <div class="contenedor-notificacion">
+        <h1>🎉 Notificar Ganador</h1>
+
+        <form action="/notificar-ganador" method="POST">
+            <label for="rifa_id">Selecciona la rifa:</label>
+            <select name="rifa_id" id="rifa_id" required>
+                {% for rifa in rifas %}
+                    <option value="{{ rifa.id }}">{{ rifa.titulo }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="numero_ganador">Número ganador:</label>
+            <input type="number" name="numero_ganador" id="numero_ganador" required placeholder="Ej: 54">
+
+            <button type="submit">🚀 Notificar al Ganador</button>
+        </form>
+
+        {% if mensaje %}
+            <p class="mensaje-exito">{{ mensaje }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

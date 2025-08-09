@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+
+  <!-- Colores de estados (solo estilos, sin cambiar lógica) -->
+  <style>
+    .num-bola{
+      display:inline-flex; align-items:center; justify-content:center;
+      width:40px; height:40px; border-radius:50%;
+      font-weight:600; border:2px solid transparent; margin:4px;
+      transition:transform .08s ease, box-shadow .12s ease;
+    }
+    /* Estados */
+    .num-bola.disponible{
+      background:#ffffff; color:#111827; border-color:#e5e7eb; /* blanco */
+    }
+    .num-bola.reservado{
+      background:#fde047; color:#111827; border-color:#f59e0b; /* amarillo */
+    }
+    .num-bola.pagado{
+      background:#ef4444; color:#ffffff; border-color:#b91c1c; /* rojo */
+      cursor:not-allowed; opacity:.95;
+    }
+    .num-bola.selected{
+      background:#3b82f6; color:#ffffff; border-color:#1d4ed8; /* azul */
+      box-shadow:0 0 0 3px rgba(59,130,246,.25);
+    }
+    /* Toques UX */
+    .num-bola:not(.pagado):not(.reservado):hover{ box-shadow:0 6px 14px rgba(0,0,0,.12); }
+    .num-bola:active{ transform:scale(.98); }
+  </style>
+
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="m-0">🎟️ {{ rifa["nombre"] }}</h2>
+    <a href="{{ url_for('panel') }}" class="btn btn-outline-secondary d-none d-md-inline">⬅️ Panel</a>
+  </div>
+
+  <div class="row g-4 align-items-start">
+    <!-- Columna: detalle e imagen -->
+    <div class="col-12 col-lg-5">
+      <div class="glass p-3">
+        {% if rifa["imagen_premio"] %}
+          <img src="{{ url_for('static', filename=rifa['imagen_premio']) }}" alt="Premio" class="img-fluid rounded mb-3">
+        {% endif %}
+
+        <div class="mb-2">
+          <div class="text-secondary small">Precio por número</div>
+          <div class="h4 m-0">$ {{ "{:,}".format(rifa["valor_numero"]).replace(",", ".") }} COP</div>
+        </div>
+
+        {% if negocio %}
+        <div class="small text-secondary">
+          Organiza: <strong>{{ negocio["nombre_negocio"] }}</strong>
+        </div>
+        {% endif %}
+
+        {% if rifa["descripcion"] %}
+        <hr class="my-3">
+        <p class="m-0">{{ rifa["descripcion"] }}</p>
+        {% endif %}
+      </div>
+
+      <!-- Leyenda de estados -->
+      <div class="glass p-3 mt-3">
+        <div class="d-flex flex-wrap gap-3 small">
+          <div class="d-flex align-items-center gap-2">
+            <span class="num-bola disponible" style="width:26px;height:26px;border-width:2px;"></span> Disponible
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="num-bola reservado" style="width:26px;height:26px;border-width:2px;"></span> Reservado
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="num-bola pagado" style="width:26px;height:26px;border-width:2px;"></span> Pagado
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="num-bola selected" style="width:26px;height:26px;border-width:2px;"></span> Seleccionado
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna: talonario + pago -->
+    <div class="col-12 col-lg-7">
+      <!-- Talonario (bolas estilo Baloto) -->
+      <div class="glass p-3 mb-3">
+        <h5 class="mb-3">Elige tus números</h5>
+        <div
+          class="grid-numeros"
+          id="grid-numeros"
+          data-precio="{{ rifa['valor_numero']|int }}"
+        >
+          {% for n in numeros %}
+            <button
+              type="button"
+              class="num-bola {{ n.estado }}"
+              data-numero="{{ n.numero }}"
+              {% if n.estado == 'pagado' %}disabled{% endif %}
+            >{{ n.numero }}</button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Datos del comprador y pago -->
+      <div class="glass p-3">
+        <h5 class="mb-3">Tus datos</h5>
+        <form id="form-pago" class="row g-3" action="{{ url_for('generar_pago') }}">
+          <input type="hidden" name="rifa_id" value="{{ rifa['id'] }}">
+          <input type="hidden" name="numeros" id="numeros">
+
+          <div class="col-12 col-md-6">
+            <label class="form-label">Nombre completo *</label>
+            <input class="form-control" name="nombre" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Cédula *</label>
+            <input class="form-control" name="cedula" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Correo *</label>
+            <input type="email" class="form-control" name="correo" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label">Teléfono (WhatsApp) *</label>
+            <input class="form-control" name="telefono" required>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <div class="small text-secondary">
+              Seleccionados: <strong id="cant">0</strong> — Total:
+              <strong>$ <span id="total">0</span> COP</strong>
+            </div>
+            <button type="submit" class="btn btn-primary">💳 Pagar con Wompi</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var grid = document.getElementById('grid-numeros');
+  var inputNums = document.getElementById('numeros');
+  var cant = document.getElementById('cant');
+  var total = document.getElementById('total');
+
+  // Precio sin inyectar Jinja en JS
+  var precioUnidad = 0;
+  if (grid && grid.dataset && grid.dataset.precio) {
+    precioUnidad = parseInt(grid.dataset.precio, 10) || 0;
+  }
+
+  if (grid) {
+    grid.addEventListener('click', function(e){
+      var b = e.target.closest('.num-bola');
+      if(!b) return;
+      if (b.classList.contains('pagado') || b.classList.contains('reservado')) return;
+      b.classList.toggle('selected');
+
+      var sel = Array.prototype.slice.call(grid.querySelectorAll('.num-bola.selected'))
+                .map(function(x){ return x.getAttribute('data-numero'); });
+
+      inputNums.value = sel.join(',');
+      cant.textContent = String(sel.length);
+      total.textContent = (sel.length * precioUnidad).toLocaleString('es-CO');
+    });
+  }
+
+  var form = document.getElementById('form-pago');
+  if (form) {
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      if(!inputNums.value){
+        toast('Selecciona al menos un número.');
+        return;
+      }
+      var fd = new FormData(form);
+      fetch(form.action, { method: 'POST', body: fd })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if(data && data.ok && data.checkout_url){
+            window.location.href = data.checkout_url;
+          } else {
+            toast((data && data.error) ? data.error : 'No se pudo generar el link de pago.');
+          }
+        })
+        .catch(function(){ toast('Error de conexión. Intenta de nuevo.'); });
+    });
+  }
+
+  function toast(msg){
+    var b = document.createElement('div');
+    b.textContent = msg;
+    b.style.position = 'fixed';
+    b.style.right = '16px';
+    b.style.bottom = '16px';
+    b.style.background = '#111827';
+    b.style.color = '#fff';
+    b.style.padding = '10px 14px';
+    b.style.borderRadius = '10px';
+    b.style.boxShadow = '0 10px 20px rgba(0,0,0,.2)';
+    b.style.zIndex = '9999';
+    document.body.appendChild(b);
+    setTimeout(function(){ b.remove(); }, 1600);
+  }
+})();
+</script>
+{% endblock %}

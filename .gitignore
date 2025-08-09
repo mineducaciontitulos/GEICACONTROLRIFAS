@@ -1,0 +1,5 @@
+_pycache_/
+.env
+*.sqlite3
+*.db
+static/uploads/*
