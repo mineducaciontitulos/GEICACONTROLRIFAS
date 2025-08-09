@@ -22,10 +22,10 @@ CREATE TABLE IF NOT EXISTS negocios (
     public_key_wompi TEXT DEFAULT '',
     private_key_wompi TEXT DEFAULT '',
     merchant_id_wompi TEXT DEFAULT '',
-    integrity_secret_wompi TEXT DEFAULT '', 
-    checkout_url_wompi TEXT '',              
+    integrity_secret_wompi TEXT DEFAULT '',
+    checkout_url_wompi TEXT DEFAULT '',
     estado TEXT DEFAULT 'activo'
-)          
+);
 """)
 
 cur.execute("""

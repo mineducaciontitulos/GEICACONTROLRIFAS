@@ -109,15 +109,19 @@ def superadmin_crear_negocio():
     estado       = (request.form.get("estado") or "activo").strip().lower()
     pub          = (request.form.get("public_key_wompi") or "").strip()
     prv          = (request.form.get("private_key_wompi") or "").strip()
-    itg          = request.form.get("integrity_secret_wompi","").strip()
+    itg          = (request.form.get("integrity_secret_wompi") or "").strip()
     chk          = (request.form.get("checkout_url_wompi") or "").strip()
-    
+
     if not nombre or not correo or not contrasena:
         flash("Nombre, correo y contraseña son obligatorios.", "warning")
         return redirect(url_for("superadmin_panel", token=token))
 
-    con = db()
-    cur = con.cursor()
+    # Validar PRODUCCIÓN obligatoria
+    if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
+        flash("Debes registrar llaves Wompi de PRODUCCIÓN (pub_prod_ / prv_prod_ / prod_integrity_).", "danger")
+        return redirect(url_for("superadmin_panel", token=token))
+
+    con = db(); cur = con.cursor()
 
     # Evita duplicados por correo
     cur.execute("SELECT 1 FROM negocios WHERE correo = ?", (correo,))
@@ -126,56 +130,18 @@ def superadmin_crear_negocio():
         flash("Ese correo ya está registrado.", "danger")
         return redirect(url_for("superadmin_panel", token=token))
 
-    # --- Construcción dinámica del INSERT según el esquema real de 'negocios'
-    # Obtiene esquema: (cid, name, type, notnull, dflt_value, pk)
-    cur.execute("PRAGMA table_info(negocios)")
-    schema = cur.fetchall()
-    cols_tabla = {row["name"]: row for row in schema}
+    # Inserta negocio
+    cur.execute("""
+        INSERT INTO negocios (nombre_negocio, nombre_propietario, celular, correo, contrasena,
+                              public_key_wompi, private_key_wompi, integrity_secret_wompi, checkout_url_wompi, estado)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (nombre, propietario or nombre, celular, correo, contrasena,
+          pub, prv, itg, chk, estado))
+    con.commit(); con.close()
 
-    # Valores base que solemos manejar
-    valores = {
-        "nombre_negocio": nombre,
-        "nombre_propietario": propietario or nombre,  # fallback si no se envía
-        "correo": correo,
-        "contrasena": contrasena,
-        "estado": estado,
-        "celular": celular,
-        "public_key_wompi": pub,
-        "private_key_wompi": prv,
-        "integrity_secret_wompi": itg,
-        "checkout_url_wompi": chk,
-    }
-
-    # Asegura columnas NOT NULL sin default (si existen y no están en valores), con string vacío
-    for name, info in cols_tabla.items():
-        es_pk = bool(info["pk"])
-        es_notnull = bool(info["notnull"])
-        tiene_default = info["dflt_value"] is not None
-        if es_pk:
-            continue
-        if es_notnull and not tiene_default and name not in valores:
-            # Rellena con vacío para evitar IntegrityError si el esquema exige NOT NULL
-            valores[name] = ""
-
-    # Filtra solo columnas que realmente existen en la tabla
-    columnas_finales = [c for c in valores.keys() if c in cols_tabla]
-    placeholders = ",".join(["?"] * len(columnas_finales))
-    sql = f"INSERT INTO negocios ({','.join(columnas_finales)}) VALUES ({placeholders})"
-    data = [valores[c] for c in columnas_finales]
-
-    try:
-        cur.execute(sql, data)
-        con.commit()
-        flash("Negocio creado ✅ Ya puedes iniciar sesión en /login", "success")
-    except sqlite3.IntegrityError as e:
-        # Mensaje claro si vuelve a faltar algo específico del esquema
-        flash(f"Error al crear el negocio (integridad): {e}", "danger")
-    except Exception as e:
-        flash(f"Error inesperado al crear el negocio: {e}", "danger")
-    finally:
-        con.close()
-
+    flash("Negocio creado ✅ (llaves de producción registradas)", "success")
     return redirect(url_for("superadmin_panel", token=token))
+
 
 @app.route("/superadmin")
 def superadmin_panel():
@@ -385,16 +351,20 @@ def rifa_publica(link_publico):
 @app.route("/generar-pago", methods=["POST"])
 def generar_pago():
     """
-    Recibe:
-      rifa_id, numeros (comma), nombre, cedula, correo, telefono
-    1) Valida disponibilidad -> marca como 'reservado'
-    2) Crea (o vincula) comprador y compra 'pendiente'
-    3) Genera link de pago (helper generar_link_de_pago)
-    4) Devuelve URL de checkout
+    Flujo:
+      1) Valida datos y rifa activa
+      2) Limpia reservas vencidas
+      3) Verifica disponibilidad y RESERVA con expiración
+      4) Crea/actualiza comprador y compra 'pendiente'
+      5) Genera link Wompi (PRODUCCIÓN obligatoria)
     """
     data = request.form
-    rifa_id = int(data.get("rifa_id"))
-    numeros_req = [x.strip() for x in data.get("numeros", "").split(",") if x.strip()]
+    try:
+        rifa_id = int(data.get("rifa_id"))
+    except Exception:
+        return jsonify({"ok": False, "error": "Rifa inválida"}), 400
+
+    numeros_req = [x.strip() for x in (data.get("numeros", "")).split(",") if x.strip()]
     nombre   = (data.get("nombre") or "").strip()
     cedula   = (data.get("cedula") or "").strip()
     correo   = (data.get("correo") or "").strip()
@@ -403,8 +373,7 @@ def generar_pago():
     if not (rifa_id and numeros_req and nombre and cedula and correo and telefono):
         return jsonify({"ok": False, "error": "Datos incompletos"}), 400
 
-    con = db()
-    cur = con.cursor()
+    con = db(); cur = con.cursor()
 
     # 1) Rifa activa
     cur.execute("SELECT * FROM rifas WHERE id = ? AND estado='activa'", (rifa_id,))
@@ -413,19 +382,17 @@ def generar_pago():
         con.close()
         return jsonify({"ok": False, "error": "Rifa no disponible"}), 400
 
-    # Limpia reservas vencidas de esta rifa
-    con.commit()
-    con.close()
+    # 2) Limpia reservas vencidas
+    con.commit(); con.close()
     liberar_reservas_expiradas(rifa_id)
 
-    con = db()
-    cur = con.cursor()
+    con = db(); cur = con.cursor()
 
-    # Carga negocio
+    # Carga negocio (DEBE TENER LLAVES DE PRODUCCIÓN)
     cur.execute("SELECT * FROM negocios WHERE id = ?", (rifa["id_negocio"],))
     negocio = cur.fetchone()
 
-    # 2) Validar disponibilidad
+    # 3) Validar disponibilidad
     qmarks = ",".join("?" for _ in numeros_req)
     cur.execute(f"""
         SELECT id, numero, estado FROM numeros
@@ -437,7 +404,7 @@ def generar_pago():
         con.close()
         return jsonify({"ok": False, "error": "Alguno de los números ya no está disponible"}), 409
 
-    # 3) Reservar números con expiración
+    # 3b) Reservar con expiración
     limite = (datetime.now() + timedelta(minutes=RESERVA_MINUTOS)).strftime("%Y-%m-%d %H:%M:%S")
     ids_numeros = [row["id"] for row in filas]
     cur.executemany(
@@ -461,7 +428,7 @@ def generar_pago():
         )
         comprador_id = cur.lastrowid
 
-    # 5) Crear compra pendiente
+    # 4b) Crear compra pendiente
     total = int(rifa["valor_numero"]) * len(numeros_req)
     fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     numeros_str = ",".join(numeros_req)
@@ -471,36 +438,29 @@ def generar_pago():
         VALUES (?, ?, ?, ?, ?, 'pendiente')
     """, (comprador_id, rifa_id, numeros_str, total, fecha))
     compra_id = cur.lastrowid
-
     con.commit()
 
-     # ... tras crear la compra y hacer con.commit() ...
-        # 6) Crear link de pago usando las llaves del NEGOCIO (sin fallback al .env)
-    descripcion = f"Rifa {rifa['nombre']} - Números {numeros_str}"
-    referencia  = f"compra_{compra_id}"
-
+    # 5) Link de pago (PRODUCCIÓN OBLIGATORIA)
     def _clean(s): return (s or "").strip()
-
-    # sqlite3.Row admite .keys() y acceso por nombre
     pub = _clean(negocio["public_key_wompi"]) if "public_key_wompi" in negocio.keys() else ""
     prv = _clean(negocio["private_key_wompi"]) if "private_key_wompi" in negocio.keys() else ""
     itg = _clean(negocio["integrity_secret_wompi"]) if "integrity_secret_wompi" in negocio.keys() else ""
     chk = _clean(negocio["checkout_url_wompi"])     if "checkout_url_wompi"     in negocio.keys() else ""
 
-    print("[WOMPI][APP]", "pub=", pub[:12], "itg=", (itg or "")[:16], "total=", total, flush=True)
-    if not pub or not prv or not pub.startswith("pub_"):
-        # liberar reservas y eliminar compra para no dejar números “pegados”
-        placeholders = ",".join("?" for _ in ids_numeros)
-        cur.execute(
-            f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({placeholders})",
-            ids_numeros
-        )
-        cur.execute("DELETE FROM compras WHERE id = ?", (compra_id,))
-        con.commit()
-        con.close()
-        return jsonify({"ok": False, "error": "Este negocio no tiene llaves Wompi válidas configuradas."}), 400
+    # Log minimal
+    print("[WOMPI][APP][PROD]", "pub=", pub[:12], "itg=", (itg or "")[:16], "total=", total, flush=True)
 
-    wompi_env = "production" if pub.startswith("pub_prod") else "sandbox"
+    # Validación estricta de producción
+    if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
+        # liberar reservas y eliminar compra para no “pegar” números
+        placeholders = ",".join("?" for _ in ids_numeros)
+        cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({placeholders})", ids_numeros)
+        cur.execute("DELETE FROM compras WHERE id = ?", (compra_id,))
+        con.commit(); con.close()
+        return jsonify({"ok": False, "error": "Llaves Wompi inválidas. Se requieren pub_prod_ / prv_prod_ / prod_integrity_."}), 400
+
+    referencia  = f"compra_{compra_id}"
+    descripcion = f"Rifa {rifa['nombre']} - Números {numeros_str}"
 
     try:
         checkout_url = generar_link_de_pago(
@@ -511,24 +471,20 @@ def generar_pago():
             customer_email=correo,
             wompi_public_key=pub,
             wompi_private_key=prv,
-            wompi_env=wompi_env,
+            wompi_env="production",              # fijo
             wompi_integrity_secret=itg,
-            wompi_checkout_base=chk
+            wompi_checkout_base=chk or "https://checkout.wompi.co/p/"
         )
         con.close()
         return jsonify({"ok": True, "checkout_url": checkout_url})
     except Exception as e:
         # liberar reservas y borrar compra si algo falla
         placeholders = ",".join("?" for _ in ids_numeros)
-        cur.execute(
-            f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({placeholders})",
-            ids_numeros
-        )
+        cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({placeholders})", ids_numeros)
         cur.execute("DELETE FROM compras WHERE id = ?", (compra_id,))
-        con.commit()
-        con.close()
+        con.commit(); con.close()
         return jsonify({"ok": False, "error": f"No se pudo generar el link de pago: {e}"}), 500
-
+    
 @app.after_request
 def no_cache(resp):
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
