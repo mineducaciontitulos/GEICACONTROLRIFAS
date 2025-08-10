@@ -1,7 +1,8 @@
 import os
 import uuid
 import random
-import sqlite3
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 from flask import (Flask, render_template, request, redirect,
                    url_for, flash, session, send_from_directory, jsonify, abort)
@@ -19,7 +20,7 @@ SUPERADMIN_TOKEN = "geica-dev"  # cámbialo si quieres otro valor
 load_dotenv()
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DB_PATH  = os.path.join(BASE_DIR, "geicacontrolrifas.db")
+DB_PATH  = os.path.join(BASE_DIR, "geicacontrolrifas.db")   # ya no se usa, lo dejo por compatibilidad
 UPLOAD_DIR = os.path.join(BASE_DIR, "static", "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -35,8 +36,16 @@ ENV_WOMPI_ENV     = os.getenv("WOMPI_ENV", "sandbox")
 
 # ================ HELPERS DE DB =====================
 def db():
-    con = sqlite3.connect(DB_PATH)
-    con.row_factory = sqlite3.Row
+    """
+    Conexión a PostgreSQL usando DATABASE_URL.
+    """
+    db_url = os.getenv("DATABASE_URL", "").strip()
+    if not db_url:
+        raise RuntimeError("DATABASE_URL no está configurada. Defínela en Render.")
+    if "sslmode=" not in db_url:
+        sep = "&" if "?" in db_url else "?"
+        db_url = db_url + f"{sep}sslmode=require"
+    con = psycopg2.connect(db_url)
     return con
 
 def negocio_actual():
@@ -45,8 +54,8 @@ def negocio_actual():
     if not nid:
         return None
     con = db()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM negocios WHERE id = ?", (nid,))
+    cur = con.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM negocios WHERE id = %s", (nid,))
     row = cur.fetchone()
     con.close()
     return row
@@ -82,12 +91,15 @@ RESERVA_MINUTOS = int(os.getenv("RESERVA_MINUTOS", "30"))
 def liberar_reservas_expiradas(rifa_id: int):
     """Pone 'disponible' todo número 'reservado' cuyo reservado_hasta ya pasó."""
     con = db()
-    cur = con.cursor()
-    ahora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    cur = con.cursor(cursor_factory=RealDictCursor)
+    ahora = datetime.now()
     cur.execute("""
         UPDATE numeros
-        SET estado='disponible', reservado_hasta=NULL, id_comprador=NULL
-        WHERE id_rifa=? AND estado='reservado' AND reservado_hasta IS NOT NULL AND reservado_hasta < ?
+           SET estado='disponible', reservado_hasta=NULL, id_comprador=NULL
+         WHERE id_rifa=%s
+           AND estado='reservado'
+           AND reservado_hasta IS NOT NULL
+           AND reservado_hasta < %s
     """, (rifa_id, ahora))
     con.commit()
     con.close()
@@ -121,10 +133,11 @@ def superadmin_crear_negocio():
         flash("Debes registrar llaves Wompi de PRODUCCIÓN (pub_prod_ / prv_prod_ / prod_integrity_).", "danger")
         return redirect(url_for("superadmin_panel", token=token))
 
-    con = db(); cur = con.cursor()
+    con = db()
+    cur = con.cursor(cursor_factory=RealDictCursor)
 
     # Evita duplicados por correo
-    cur.execute("SELECT 1 FROM negocios WHERE correo = ?", (correo,))
+    cur.execute("SELECT 1 FROM negocios WHERE correo = %s", (correo,))
     if cur.fetchone():
         con.close()
         flash("Ese correo ya está registrado.", "danger")
@@ -134,10 +147,11 @@ def superadmin_crear_negocio():
     cur.execute("""
         INSERT INTO negocios (nombre_negocio, nombre_propietario, celular, correo, contrasena,
                               public_key_wompi, private_key_wompi, integrity_secret_wompi, checkout_url_wompi, estado)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (nombre, propietario or nombre, celular, correo, contrasena,
           pub, prv, itg, chk, estado))
-    con.commit(); con.close()
+    con.commit()
+    con.close()
 
     flash("Negocio creado ✅ (llaves de producción registradas)", "success")
     return redirect(url_for("superadmin_panel", token=token))
@@ -151,7 +165,7 @@ def superadmin_panel():
         return redirect(url_for("login"))
 
     con = db()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
         SELECT 
           n.id,
@@ -186,8 +200,8 @@ def superadmin_estado_negocio():
     nuevo_estado = "activo" if accion == "activar" else "inactivo"
 
     con = db()
-    cur = con.cursor()
-    cur.execute("UPDATE negocios SET estado=? WHERE id=?", (nuevo_estado, negocio_id))
+    cur = con.cursor(cursor_factory=RealDictCursor)
+    cur.execute("UPDATE negocios SET estado=%s WHERE id=%s", (nuevo_estado, negocio_id))
     con.commit()
     con.close()
 
@@ -207,9 +221,9 @@ def login():
         correo = (request.form.get("correo") or "").strip()
         contrasena = (request.form.get("clave") or request.form.get("contrasena") or "").strip()
         con = db()
-        cur = con.cursor()
+        cur = con.cursor(cursor_factory=RealDictCursor)
         cur.execute(
-            "SELECT * FROM negocios WHERE correo = ? AND contrasena = ? AND estado = 'activo'",
+            "SELECT * FROM negocios WHERE correo = %s AND contrasena = %s AND estado = 'activo'",
             (correo, contrasena)
         )
         row = cur.fetchone()
@@ -261,21 +275,22 @@ def crear_rifa():
         link_publico = crear_link_publico()
 
         con = db()
-        cur = con.cursor()
+        cur = con.cursor(cursor_factory=RealDictCursor)
         cur.execute("""
             INSERT INTO rifas (id_negocio, nombre, descripcion, avaluo, cifras, cantidad_numeros,
                                valor_numero, nombre_loteria, imagen_premio, link_publico, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'activa')
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'activa')
+            RETURNING id
         """, (
             negocio["id"], nombre, descripcion, avaluo, cifras, cantidad,
             valor, loteria, imagen_premio, link_publico
         ))
-        rifa_id = cur.lastrowid
+        rifa_id = cur.fetchone()["id"]
 
         # Generar talonario
         lista = generar_numeros(cifras, cantidad)
         cur.executemany(
-            "INSERT INTO numeros (id_rifa, numero, estado) VALUES (?, ?, 'disponible')",
+            "INSERT INTO numeros (id_rifa, numero, estado) VALUES (%s, %s, 'disponible')",
             [(rifa_id, n) for n in lista]
         )
         con.commit()
@@ -294,12 +309,12 @@ def ver_rifas():
         return redirect(url_for("login"))
 
     con = db()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
         SELECT r.*, 
                (SELECT COUNT(*) FROM numeros n WHERE n.id_rifa = r.id AND n.estado='pagado') AS vendidos
         FROM rifas r
-        WHERE r.id_negocio = ?
+        WHERE r.id_negocio = %s
         ORDER BY r.id DESC
     """, (negocio["id"],))
     rifas = cur.fetchall()
@@ -311,8 +326,8 @@ def ver_rifas():
 @app.route("/r/<link_publico>", methods=["GET"])
 def rifa_publica(link_publico):
     con = db()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM rifas WHERE link_publico = ? AND estado='activa'", (link_publico,))
+    cur = con.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM rifas WHERE link_publico = %s AND estado='activa'", (link_publico,))
     rifa = cur.fetchone()
     if not rifa:
         con.close()
@@ -323,19 +338,17 @@ def rifa_publica(link_publico):
     liberar_reservas_expiradas(rifa["id"])
 
     con = db()
-    cur = con.cursor()
-    cur.execute("SELECT * FROM negocios WHERE id = ?", (rifa["id_negocio"],))
+    cur = con.cursor(cursor_factory=RealDictCursor)
+    cur.execute("SELECT * FROM negocios WHERE id = %s", (rifa["id_negocio"],))
     negocio = cur.fetchone()
 
     cur.execute("""
         SELECT id, numero, estado FROM numeros
-        WHERE id_rifa = ?
+        WHERE id_rifa = %s
         ORDER BY numero ASC
     """, (rifa["id"],))
     numeros = cur.fetchall()
     con.close()
-
-    ...
 
     # el template usará clases CSS por estado
     numeros_fmt = [
@@ -373,10 +386,10 @@ def generar_pago():
     if not (rifa_id and numeros_req and nombre and cedula and correo and telefono):
         return jsonify({"ok": False, "error": "Datos incompletos"}), 400
 
-    con = db(); cur = con.cursor()
+    con = db(); cur = con.cursor(cursor_factory=RealDictCursor)
 
     # 1) Rifa activa
-    cur.execute("SELECT * FROM rifas WHERE id = ? AND estado='activa'", (rifa_id,))
+    cur.execute("SELECT * FROM rifas WHERE id = %s AND estado='activa'", (rifa_id,))
     rifa = cur.fetchone()
     if not rifa:
         con.close()
@@ -386,17 +399,17 @@ def generar_pago():
     con.commit(); con.close()
     liberar_reservas_expiradas(rifa_id)
 
-    con = db(); cur = con.cursor()
+    con = db(); cur = con.cursor(cursor_factory=RealDictCursor)
 
     # Carga negocio (DEBE TENER LLAVES DE PRODUCCIÓN)
-    cur.execute("SELECT * FROM negocios WHERE id = ?", (rifa["id_negocio"],))
+    cur.execute("SELECT * FROM negocios WHERE id = %s", (rifa["id_negocio"],))
     negocio = cur.fetchone()
 
     # 3) Validar disponibilidad
-    qmarks = ",".join("?" for _ in numeros_req)
+    qmarks = ",".join(["%s"] * len(numeros_req))
     cur.execute(f"""
         SELECT id, numero, estado FROM numeros
-        WHERE id_rifa = ? AND numero IN ({qmarks})
+        WHERE id_rifa = %s AND numero IN ({qmarks})
     """, (rifa_id, *numeros_req))
     filas = cur.fetchall()
 
@@ -405,47 +418,48 @@ def generar_pago():
         return jsonify({"ok": False, "error": "Alguno de los números ya no está disponible"}), 409
 
     # 3b) Reservar con expiración
-    limite = (datetime.now() + timedelta(minutes=RESERVA_MINUTOS)).strftime("%Y-%m-%d %H:%M:%S")
+    limite = (datetime.now() + timedelta(minutes=RESERVA_MINUTOS))
     ids_numeros = [row["id"] for row in filas]
     cur.executemany(
-        "UPDATE numeros SET estado='reservado', reservado_hasta=? WHERE id = ?",
+        "UPDATE numeros SET estado='reservado', reservado_hasta=%s WHERE id = %s",
         [(limite, i) for i in ids_numeros]
     )
 
     # 4) Crear/actualizar comprador
-    cur.execute("SELECT id FROM compradores WHERE cedula = ?", (cedula,))
+    cur.execute("SELECT id FROM compradores WHERE cedula = %s", (cedula,))
     cmp = cur.fetchone()
     if cmp:
         comprador_id = cmp["id"]
         cur.execute(
-            "UPDATE compradores SET nombre=?, correo=?, telefono=? WHERE id=?",
+            "UPDATE compradores SET nombre=%s, correo=%s, telefono=%s WHERE id=%s",
             (nombre, correo, telefono, comprador_id)
         )
     else:
         cur.execute(
-            "INSERT INTO compradores (nombre, cedula, correo, telefono) VALUES (?, ?, ?, ?)",
+            "INSERT INTO compradores (nombre, cedula, correo, telefono) VALUES (%s, %s, %s, %s) RETURNING id",
             (nombre, cedula, correo, telefono)
         )
-        comprador_id = cur.lastrowid
+        comprador_id = cur.fetchone()["id"]
 
     # 4b) Crear compra pendiente
     total = int(rifa["valor_numero"]) * len(numeros_req)
-    fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    fecha = datetime.now()
     numeros_str = ",".join(numeros_req)
 
     cur.execute("""
-        INSERT INTO compras (id_comprador, id_rifa, numeros, total, fecha, estado)
-        VALUES (?, ?, ?, ?, ?, 'pendiente')
-    """, (comprador_id, rifa_id, numeros_str, total, fecha))
-    compra_id = cur.lastrowid
+        INSERT INTO compras (id_comprador, id_rifa, numeros, total, fecha, estado, referencia)
+        VALUES (%s, %s, %s, %s, %s, 'pendiente', %s)
+        RETURNING id
+    """, (comprador_id, rifa_id, numeros_str, total, fecha, None))
+    compra_id = cur.fetchone()["id"]
     con.commit()
 
     # 5) Link de pago (PRODUCCIÓN OBLIGATORIA)
     def _clean(s): return (s or "").strip()
-    pub = _clean(negocio["public_key_wompi"]) if "public_key_wompi" in negocio.keys() else ""
-    prv = _clean(negocio["private_key_wompi"]) if "private_key_wompi" in negocio.keys() else ""
-    itg = _clean(negocio["integrity_secret_wompi"]) if "integrity_secret_wompi" in negocio.keys() else ""
-    chk = _clean(negocio["checkout_url_wompi"])     if "checkout_url_wompi"     in negocio.keys() else ""
+    pub = _clean(negocio.get("public_key_wompi"))
+    prv = _clean(negocio.get("private_key_wompi"))
+    itg = _clean(negocio.get("integrity_secret_wompi"))
+    chk = _clean(negocio.get("checkout_url_wompi"))
 
     # Log minimal
     print("[WOMPI][APP][PROD]", "pub=", pub[:12], "itg=", (itg or "")[:16], "total=", total, flush=True)
@@ -453,9 +467,9 @@ def generar_pago():
     # Validación estricta de producción
     if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
         # liberar reservas y eliminar compra para no “pegar” números
-        placeholders = ",".join("?" for _ in ids_numeros)
-        cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({placeholders})", ids_numeros)
-        cur.execute("DELETE FROM compras WHERE id = ?", (compra_id,))
+        qmarks_ids = ",".join(["%s"] * len(ids_numeros))
+        cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({qmarks_ids})", ids_numeros)
+        cur.execute("DELETE FROM compras WHERE id = %s", (compra_id,))
         con.commit(); con.close()
         return jsonify({"ok": False, "error": "Llaves Wompi inválidas. Se requieren pub_prod_ / prv_prod_ / prod_integrity_."}), 400
 
@@ -478,13 +492,12 @@ def generar_pago():
         con.close()
         return jsonify({"ok": True, "checkout_url": checkout_url})
     except Exception as e:
-        # liberar reservas y borrar compra si algo falla
-        placeholders = ",".join("?" for _ in ids_numeros)
-        cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({placeholders})", ids_numeros)
-        cur.execute("DELETE FROM compras WHERE id = ?", (compra_id,))
+        qmarks_ids = ",".join(["%s"] * len(ids_numeros))
+        cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({qmarks_ids})", ids_numeros)
+        cur.execute("DELETE FROM compras WHERE id = %s", (compra_id,))
         con.commit(); con.close()
         return jsonify({"ok": False, "error": f"No se pudo generar el link de pago: {e}"}), 500
-    
+
 @app.after_request
 def no_cache(resp):
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
@@ -510,7 +523,7 @@ def webhook_pago():
     estado_tx = result["status"]     # APPROVED / DECLINED / VOIDED / ERROR
 
     con = db()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=RealDictCursor)
 
     # Solo procesamos referencias del tipo compra_#
     if not reference.startswith("compra_"):
@@ -523,7 +536,7 @@ def webhook_pago():
         SELECT c.*, r.id_negocio, r.nombre, r.valor_numero, r.id AS rifa_id
         FROM compras c
         JOIN rifas r ON r.id = c.id_rifa
-        WHERE c.id = ?
+        WHERE c.id = %s
     """, (compra_id,))
     compra = cur.fetchone()
     if not compra:
@@ -531,39 +544,39 @@ def webhook_pago():
         return jsonify({"ok": True}), 200
 
     # Cargar negocio y comprador (para notificaciones)
-    cur.execute("SELECT * FROM negocios WHERE id = ?", (compra["id_negocio"],))
+    cur.execute("SELECT * FROM negocios WHERE id = %s", (compra["id_negocio"],))
     negocio = cur.fetchone()
-    cur.execute("SELECT * FROM compradores WHERE id = ?", (compra["id_comprador"],))
+    cur.execute("SELECT * FROM compradores WHERE id = %s", (compra["id_comprador"],))
     comprador = cur.fetchone()
 
     numeros_lista = [x.strip() for x in (compra["numeros"] or "").split(",") if x.strip()]
-    qmarks = ",".join("?" for _ in numeros_lista) if numeros_lista else ""
+    qmarks = ",".join(["%s"] * len(numeros_lista)) if numeros_lista else ""
 
     if estado_tx == "APPROVED":
         # 1) marcar compra como pagada
-        cur.execute("UPDATE compras SET estado='pagado' WHERE id = ?", (compra_id,))
-        # 2) bloquear números: pagado + limpiar reservado_hasta (si lo tienes en el schema)
+        cur.execute("UPDATE compras SET estado='pagado' WHERE id = %s", (compra_id,))
+        # 2) bloquear números: pagado + limpiar reservado_hasta
         if numeros_lista:
             cur.execute(f"""
                 UPDATE numeros
-                SET estado='pagado', id_comprador=?, reservado_hasta=NULL
-                WHERE id_rifa=? AND numero IN ({qmarks})
+                   SET estado='pagado', id_comprador=%s, reservado_hasta=NULL
+                 WHERE id_rifa=%s AND numero IN ({qmarks})
             """, (compra["id_comprador"], compra["rifa_id"], *numeros_lista))
 
         # 3) notificar (sin romper si faltan datos)
         try:
             mensaje = (f"🎉 ¡Pago aprobado!\nRifa: {compra['nombre']}\n"
                        f"Números: {compra['numeros']}\nTotal: ${compra['total']}\n¡Suerte!")
-            if comprador and comprador["telefono"]:
+            if comprador and comprador.get("telefono"):
                 enviar_whatsapp(comprador["telefono"], mensaje)
-            if comprador and comprador["correo"]:
+            if comprador and comprador.get("correo"):
                 enviar_correo(comprador["correo"], "Compra confirmada", mensaje)
 
-            admin_msg = (f"✅ Pago recibido\nCliente: {comprador['nombre']}\n"
+            admin_msg = (f"✅ Pago recibido\nCliente: {comprador.get('nombre','')}\n"
                          f"Números: {compra['numeros']}\nTotal: ${compra['total']}")
-            if negocio and negocio["celular"]:
+            if negocio and negocio.get("celular"):
                 enviar_whatsapp(negocio["celular"], admin_msg)
-            if negocio and negocio["correo"]:
+            if negocio and negocio.get("correo"):
                 enviar_correo(negocio["correo"], "Nueva compra confirmada", admin_msg)
         except Exception as e:
             print("Error enviando notificaciones:", e)
@@ -573,10 +586,10 @@ def webhook_pago():
         if numeros_lista:
             cur.execute(f"""
                 UPDATE numeros
-                SET estado='disponible', id_comprador=NULL, reservado_hasta=NULL
-                WHERE id_rifa=? AND numero IN ({qmarks})
+                   SET estado='disponible', id_comprador=NULL, reservado_hasta=NULL
+                 WHERE id_rifa=%s AND numero IN ({qmarks})
             """, (compra["rifa_id"], *numeros_lista))
-        cur.execute("UPDATE compras SET estado='pendiente' WHERE id = ?", (compra_id,))
+        cur.execute("UPDATE compras SET estado='pendiente' WHERE id = %s", (compra_id,))
 
     con.commit()
     con.close()
@@ -591,14 +604,14 @@ def notificar_ganador():
         return redirect(url_for("login"))
 
     con = db()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=RealDictCursor)
 
     if request.method == "POST":
         nombre_rifa = (request.form.get("nombre_rifa") or "").strip()
         numero_ganador = (request.form.get("numero_ganador") or "").strip()
 
         # 1) Buscar rifa por nombre dentro del negocio
-        cur.execute("SELECT * FROM rifas WHERE id_negocio=? AND nombre=?",
+        cur.execute("SELECT * FROM rifas WHERE id_negocio=%s AND nombre=%s",
                     (negocio["id"], nombre_rifa))
         rifa = cur.fetchone()
         if not rifa:
@@ -619,7 +632,7 @@ def notificar_ganador():
                    c.telefono AS comprador_tel
             FROM numeros n
             LEFT JOIN compradores c ON c.id = n.id_comprador
-            WHERE n.id_rifa=? AND n.numero=?
+            WHERE n.id_rifa=%s AND n.numero=%s
         """, (rifa["id"], numero_norm))
         fila = cur.fetchone()
         con.close()
@@ -632,9 +645,9 @@ def notificar_ganador():
         msg_txt = (f"🎉 ¡Felicidades! Eres el ganador de la rifa '{nombre_rifa}' "
                    f"con el número {numero_norm}. Pronto te contactarán.")
         try:
-            if fila["comprador_tel"]:
+            if fila.get("comprador_tel"):
                 enviar_whatsapp(fila["comprador_tel"], msg_txt)
-            if fila["comprador_correo"]:
+            if fila.get("comprador_correo"):
                 enviar_correo(fila["comprador_correo"], "¡Eres el ganador!", msg_txt)
             flash("Ganador notificado con éxito.", "success")
         except Exception as e:
@@ -644,7 +657,7 @@ def notificar_ganador():
         return redirect(url_for("panel"))
 
     # GET -> lista de nombres de rifas del negocio para el select
-    cur.execute("SELECT nombre FROM rifas WHERE id_negocio=? ORDER BY id DESC", (negocio["id"],))
+    cur.execute("SELECT nombre FROM rifas WHERE id_negocio=%s ORDER BY id DESC", (negocio["id"],))
     nombres = [r["nombre"] for r in cur.fetchall()]
     con.close()
     return render_template("notificar_ganador.html", negocio=negocio, nombres_rifas=nombres)
@@ -668,12 +681,12 @@ def actualizar_rifas():
     if 'negocio_id' not in session:
         return redirect(url_for('login'))
 
-    con = db()  # usa DB_PATH y row_factory
-    cur = con.cursor()
+    con = db()
+    cur = con.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
         SELECT id, nombre, descripcion, valor_numero, cifras, cantidad_numeros, estado
         FROM rifas
-        WHERE id_negocio = ? AND estado = 'activa'
+        WHERE id_negocio = %s AND estado = 'activa'
         ORDER BY id DESC
     """, (session['negocio_id'],))
     rifas_activas = cur.fetchall()
@@ -694,7 +707,7 @@ def soporte():
 
 def rifas_resumen_por_negocio(negocio_id: int):
     con = db()
-    cur = con.cursor()
+    cur = con.cursor(cursor_factory=RealDictCursor)
     cur.execute("""
         SELECT
             r.id, r.nombre, r.descripcion, r.valor_numero, r.cifras, r.cantidad_numeros,
@@ -702,7 +715,7 @@ def rifas_resumen_por_negocio(negocio_id: int):
             (SELECT COUNT(*) FROM numeros n WHERE n.id_rifa = r.id) AS total,
             (SELECT COUNT(*) FROM numeros n WHERE n.id_rifa = r.id AND n.estado='pagado') AS vendidos
         FROM rifas r
-        WHERE r.id_negocio = ?
+        WHERE r.id_negocio = %s
         ORDER BY r.id DESC
     """, (negocio_id,))
     rows = cur.fetchall()
