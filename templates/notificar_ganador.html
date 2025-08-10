@@ -1,31 +1,55 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Notificar Ganador</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/estilos.css') }}">
-</head>
-<body>
-    <div class="contenedor-notificacion">
-        <h1>🎉 Notificar Ganador</h1>
-
-        <form action="/notificar-ganador" method="POST">
-            <label for="rifa_id">Selecciona la rifa:</label>
-            <select name="rifa_id" id="rifa_id" required>
-                {% for rifa in rifas %}
-                    <option value="{{ rifa.id }}">{{ rifa.titulo }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="numero_ganador">Número ganador:</label>
-            <input type="number" name="numero_ganador" id="numero_ganador" required placeholder="Ej: 54">
-
-            <button type="submit">🚀 Notificar al Ganador</button>
-        </form>
-
-        {% if mensaje %}
-            <p class="mensaje-exito">{{ mensaje }}</p>
-        {% endif %}
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <h2 class="m-0">🏆 Notificar Ganador</h2>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-outline-light" href="{{ url_for('panel') }}">← Volver al panel</a>
     </div>
-</body>
-</html>
+  </div>
+
+  <div class="glass p-4">
+    <form method="POST" action="{{ url_for('notificar_ganador') }}" class="row g-3">
+      <!-- Selección de rifa por NOMBRE (lo que espera tu app.py) -->
+      <div class="col-12 col-md-6">
+        <label for="nombre_rifa" class="form-label">Rifa</label>
+        <select class="form-select" id="nombre_rifa" name="nombre_rifa" required>
+          {% for nombre in nombres_rifas %}
+            <option value="{{ nombre }}">{{ nombre }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">Elige la rifa donde se realizó el sorteo.</div>
+      </div>
+
+      <!-- Número ganador (texto para permitir 0 a la izquierda) -->
+      <div class="col-12 col-md-6">
+        <label for="numero_ganador" class="form-label">Número ganador</label>
+        <input
+          type="text"
+          class="form-control"
+          id="numero_ganador"
+          name="numero_ganador"
+          placeholder="Ej: 05, 1234"
+          required
+          inputmode="numeric"
+          pattern="[0-9]{1,6}"
+          maxlength="6"
+        >
+        <div class="form-text">
+          Escribe el número exactamente como aparece en el talonario (incluye ceros a la izquierda si aplica).
+        </div>
+      </div>
+
+      <div class="col-12 d-flex justify-content-end">
+        <button type="submit" class="btn btn-primary">🚀 Notificar al Ganador</button>
+      </div>
+    </form>
+  </div>
+
+  {% if mensaje %}
+    <div class="alert alert-success mt-3" role="alert">
+      {{ mensaje }}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

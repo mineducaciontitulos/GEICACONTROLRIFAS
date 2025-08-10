@@ -9,9 +9,10 @@
       <a class="btn btn-outline-light" href="{{ url_for('crear_rifa') }}">+ Crear Rifa</a>
       <a class="btn btn-primary" href="{{ url_for('actualizar_rifas') }}">✎ Actualizar Rifas</a>
       <a class="btn btn-outline-info" href="{{ url_for('ver_rifas') }}">📋 Ver Rifas</a>
+      <a class="btn btn-warning" href="{{ url_for('notificar_ganador') }}">🏆 Notificar Ganador</a>
       <a class="btn btn-outline-danger" href="{{ url_for('logout') }}">⛔ Cerrar Sesión</a>
     </div>
-  </div>
+</div>
 
   <!-- Mensaje de bienvenida -->
   <div class="glass p-4 mb-4">
@@ -62,7 +63,7 @@
 
     {% if rifas and rifas|length > 0 %}
     <div class="table-responsive">
-      <table class="table table-dark table-borderless align-middle mb-0">
+      <table class="table table-striped table-hover align-middle mb-0">
         <thead>
           <tr>
             <th>Rifa</th>

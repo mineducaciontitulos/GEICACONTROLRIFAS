@@ -594,9 +594,10 @@ def notificar_ganador():
     cur = con.cursor()
 
     if request.method == "POST":
-        nombre_rifa = request.form.get("nombre_rifa", "").strip()
-        numero_ganador = request.form.get("numero_ganador", "").strip()
+        nombre_rifa = (request.form.get("nombre_rifa") or "").strip()
+        numero_ganador = (request.form.get("numero_ganador") or "").strip()
 
+        # 1) Buscar rifa por nombre dentro del negocio
         cur.execute("SELECT * FROM rifas WHERE id_negocio=? AND nombre=?",
                     (negocio["id"], nombre_rifa))
         rifa = cur.fetchone()
@@ -605,13 +606,21 @@ def notificar_ganador():
             flash("Rifa no encontrada.", "warning")
             return redirect(url_for("notificar_ganador"))
 
+        # 2) Normalizar número con ceros a la izquierda según las cifras de la rifa
+        try:
+            cifras = int(rifa["cifras"])
+        except Exception:
+            cifras = 2  # fallback
+        numero_norm = numero_ganador.zfill(cifras)
+
+        # 3) Consultar el número en estado pagado (con datos del comprador)
         cur.execute("""
             SELECT n.*, c.nombre AS comprador_nombre, c.correo AS comprador_correo,
                    c.telefono AS comprador_tel
             FROM numeros n
             LEFT JOIN compradores c ON c.id = n.id_comprador
             WHERE n.id_rifa=? AND n.numero=?
-        """, (rifa["id"], numero_ganador))
+        """, (rifa["id"], numero_norm))
         fila = cur.fetchone()
         con.close()
 
@@ -619,14 +628,14 @@ def notificar_ganador():
             flash("El número no corresponde a un comprador pagado.", "danger")
             return redirect(url_for("notificar_ganador"))
 
-        # Notificar ganador
-        mensaje = (f"🎉 ¡Felicidades! Eres el ganador de la rifa '{nombre_rifa}' "
-                   f"con el número {numero_ganador}. Pronto te contactarán.")
+        # 4) Notificar ganador
+        msg_txt = (f"🎉 ¡Felicidades! Eres el ganador de la rifa '{nombre_rifa}' "
+                   f"con el número {numero_norm}. Pronto te contactarán.")
         try:
             if fila["comprador_tel"]:
-                enviar_whatsapp(fila["comprador_tel"], mensaje)
+                enviar_whatsapp(fila["comprador_tel"], msg_txt)
             if fila["comprador_correo"]:
-                enviar_correo(fila["comprador_correo"], "¡Eres el ganador!", mensaje)
+                enviar_correo(fila["comprador_correo"], "¡Eres el ganador!", msg_txt)
             flash("Ganador notificado con éxito.", "success")
         except Exception as e:
             print("Error notificando ganador:", e)
@@ -634,7 +643,7 @@ def notificar_ganador():
 
         return redirect(url_for("panel"))
 
-    # GET -> Cargar rifas del negocio para autocompletar
+    # GET -> lista de nombres de rifas del negocio para el select
     cur.execute("SELECT nombre FROM rifas WHERE id_negocio=? ORDER BY id DESC", (negocio["id"],))
     nombres = [r["nombre"] for r in cur.fetchall()]
     con.close()
