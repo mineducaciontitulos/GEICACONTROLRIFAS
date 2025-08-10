@@ -154,9 +154,12 @@ def superadmin_crear_negocio():
         flash("Nombre, correo y contraseña son obligatorios.", "warning")
         return redirect(url_for("superadmin_panel"))
 
-    # Producción obligatoria (tal como lo tenías)
-    if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
-        flash("Debes registrar llaves Wompi de PRODUCCIÓN (pub_prod_ / prv_prod_ / prod_integrity_).", "danger")
+    # Aceptar llaves de producción O llaves de prueba
+    if not (
+        (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")) or
+        (pub.startswith("pub_test_") and prv.startswith("prv_test_") and itg.startswith("test_integrity_"))
+    ):
+        flash("Debes registrar llaves Wompi válidas (producción o prueba).", "danger")
         return redirect(url_for("superadmin_panel"))
 
     try:

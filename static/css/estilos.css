@@ -305,61 +305,6 @@ html{ font-size: 16.5px; } /* opcional */
   .table .text-truncate{ max-width: 180px; }
 }
 
-/* ====== SUPERADMIN: Ajustes 100% responsivos (sin tocar HTML) ====== */
-
-/* Que el contenido no se pegue a los bordes en móvil */
-.container{ padding-left:16px; padding-right:16px; }
-
-/* Inputs y selects: alto mínimo táctil y ancho correcto */
-input.form-control,
-select.form-select,
-textarea.form-control{
-  width:100%;
-  min-height:44px;
-  line-height:1.25;
-}
-
-/* Cards “glass”: respiren mejor en pantallas chicas */
-@media (max-width: 768px){
-  .glass{ padding:16px !important; border-radius:14px; }
-}
-
-/* Fuerza a que TODAS las columnas del form se apilen en móvil,
-   por si algún estilo previo interfiere con Bootstrap */
-@media (max-width: 768px){
-  .row.g-3 > [class^="col-"],
-  .row.g-3 > [class*=" col-"],
-  .row.g-3 > [class^="col-md-"],
-  .row.g-3 > [class*=" col-md-"]{
-    flex: 0 0 100% !important;
-    max-width: 100% !important;
-  }
-  /* separaciones más cómodas entre controles */
-  .row.g-3 > [class^="col-"]{ margin-bottom: .35rem; }
-}
-
-/* En tablets (<=992px) usa dos columnas cómodas */
-@media (min-width: 769px) and (max-width: 992px){
-  .row.g-3 > [class^="col-md-4"]{ flex:0 0 50% !important; max-width:50% !important; }
-  .row.g-3 > [class^="col-md-3"]{ flex:0 0 50% !important; max-width:50% !important; }
-  .row.g-3 > [class^="col-md-5"]{ flex:0 0 50% !important; max-width:50% !important; }
-}
-
-/* Botón principal ancho completo en móvil */
-@media (max-width: 576px){
-  .form-actions-right{ justify-content:stretch; }
-  .form-actions-right .btn{ width:100%; }
-}
-
-/* Titular y textos un poco más compactos en móvil */
-@media (max-width: 576px){
-  h2{ font-size:1.35rem; }
-  h5{ font-size:1.05rem; }
-}
-
-/* Tablas: asegúrate de scroll horizontal si es necesario */
-.table-responsive{ overflow-x:auto; }
-
 /* === SUPERADMIN: Grid real 100% responsivo === */
 .superadmin-grid{
   display:grid;
