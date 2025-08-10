@@ -101,13 +101,23 @@ def liberar_reservas_expiradas(rifa_id: int):
     con.commit()
     con.close()
 
+# ================== SUPERADMIN HELPER (nuevo, mínimo) ==================
+def is_superadmin():
+    """
+    Permite entrar con ?token=... la primera vez y guarda la sesión.
+    Luego, mientras dure la sesión, no pide el token otra vez.
+    """
+    tok = (request.args.get("token") or "").strip()
+    if tok == SUPERADMIN_TOKEN:
+        session["is_superadmin"] = True
+    return session.get("is_superadmin") is True
+
 # ================ RUTAS BASE ========================
 
 @app.post("/superadmin/crear-negocio")
 def superadmin_crear_negocio():
-    token = request.args.get("token", "")
-    if token != SUPERADMIN_TOKEN:
-        flash("Token inválido", "danger")
+    if not is_superadmin():
+        flash("Token inválido o faltante.", "danger")
         return redirect(url_for("login"))
 
     nombre       = (request.form.get("nombre_negocio") or "").strip()
@@ -123,12 +133,12 @@ def superadmin_crear_negocio():
 
     if not nombre or not correo or not contrasena:
         flash("Nombre, correo y contraseña son obligatorios.", "warning")
-        return redirect(url_for("superadmin_panel", token=token))
+        return redirect(url_for("superadmin_panel"))
 
     # Producción obligatoria (tal como lo tenías)
     if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
         flash("Debes registrar llaves Wompi de PRODUCCIÓN (pub_prod_ / prv_prod_ / prod_integrity_).", "danger")
-        return redirect(url_for("superadmin_panel", token=token))
+        return redirect(url_for("superadmin_panel"))
 
     try:
         con = db()
@@ -139,7 +149,7 @@ def superadmin_crear_negocio():
         if cur.fetchone():
             con.close()
             flash("Ese correo ya está registrado.", "danger")
-            return redirect(url_for("superadmin_panel", token=token))
+            return redirect(url_for("superadmin_panel"))
 
         cur.execute("""
             INSERT INTO negocios
@@ -160,13 +170,12 @@ def superadmin_crear_negocio():
             pass
         flash(f"Error creando negocio: {e}", "danger")
 
-    return redirect(url_for("superadmin_panel", token=token))
+    return redirect(url_for("superadmin_panel"))
 
 @app.route("/superadmin")
 def superadmin_panel():
-    token = request.args.get("token", "")
-    if token != SUPERADMIN_TOKEN:
-        flash("Acceso denegado. Agrega ?token=geica-dev", "danger")
+    if not is_superadmin():
+        flash("Acceso denegado. Entra con ?token=geica-dev la primera vez.", "danger")
         return redirect(url_for("login"))
 
     try:
@@ -185,7 +194,7 @@ def superadmin_panel():
         """)
         negocios = cur.fetchall()
         con.close()
-        return render_template("panel_superadmin.html", negocios=negocios, token=token)
+        return render_template("panel_superadmin.html", negocios=negocios)
     except Exception as e:
         try:
             con.close()
@@ -197,17 +206,16 @@ def superadmin_panel():
 
 @app.post("/superadmin/estado-negocio")
 def superadmin_estado_negocio():
-    token = request.args.get("token", "")
-    if token != SUPERADMIN_TOKEN:
-        flash("Token inválido", "danger")
+    if not is_superadmin():
+        flash("Token inválido o faltante.", "danger")
         return redirect(url_for("login"))
 
     negocio_id = request.form.get("negocio_id")
     accion = (request.form.get("accion") or "").strip()
 
     if not negocio_id or accion not in ("activar", "desactivar"):
-        flash("Solicitud inválida", "warning")
-        return redirect(url_for("superadmin_panel", token=token))
+        flash("Solicitud inválida.", "warning")
+        return redirect(url_for("superadmin_panel"))
 
     nuevo_estado = "activo" if accion == "activar" else "inactivo"
 
@@ -225,7 +233,7 @@ def superadmin_estado_negocio():
             pass
         flash(f"No se pudo actualizar el estado: {e}", "danger")
 
-    return redirect(url_for("superadmin_panel", token=token))
+    return redirect(url_for("superadmin_panel"))
 
 @app.route("/")
 def home():
