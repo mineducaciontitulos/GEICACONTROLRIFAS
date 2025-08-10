@@ -114,6 +114,25 @@ def is_superadmin():
 
 # ================ RUTAS BASE ========================
 
+# Usa el mismo token que ya tienes definido
+SUPERADMIN_TOKEN = os.getenv("SUPERADMIN_TOKEN", "geica-dev")
+
+def is_superadmin():
+    """
+    Marca sesión de superadmin si viene ?token=...
+    y luego usa la marca de sesión en las siguientes visitas.
+    """
+    t = (request.args.get("token") or "").strip()
+    if t:  # si me pasan el token, actualizo la sesión
+        session['is_superadmin'] = (t == SUPERADMIN_TOKEN)
+    return bool(session.get("is_superadmin"))
+
+@app.get("/superadmin/logout")
+def superadmin_logout():
+    session.pop("is_superadmin", None)
+    flash("Modo superadmin desactivado.", "info")
+    return redirect(url_for("login"))
+
 @app.post("/superadmin/crear-negocio")
 def superadmin_crear_negocio():
     if not is_superadmin():
