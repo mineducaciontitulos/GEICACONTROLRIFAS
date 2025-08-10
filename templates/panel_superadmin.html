@@ -8,57 +8,72 @@
   </div>
 
   <!-- Form crear negocio -->
-  <div class="glass p-4 mb-4">
+  <div class="glass p-4 mb-4 superadmin-panel">
     <h5 class="mb-3">➕ Crear nuevo negocio</h5>
-    <form method="POST" action="{{ url_for('superadmin_crear_negocio', token=token) }}">
-      <div class="row g-3">
-        <div class="col-12 col-md-4">
-          <label class="form-label">Nombre del negocio *</label>
-          <input class="form-control" name="nombre_negocio" required placeholder="Barbería Hollywood">
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label">Correo admin *</label>
-          <input type="email" class="form-control" name="correo" required placeholder="admin@demo.com">
-        </div>
-        <div class="col-12 col-md-2">
-          <label class="form-label">Contraseña *</label>
-          <input type="password" class="form-control" name="contrasena" required placeholder="123456" autocomplete="new-password">
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label">Celular (WhatsApp)</label>
-          <input class="form-control" name="celular" placeholder="3100000000">
-        </div>
-        <div class="col-12 col-md-4">
-         <label class="form-label">Nombre del propietario *</label>
-         <input class="form-control" name="nombre_propietario" required placeholder="Juan Pérez">
-        </div>
-        <div class="col-12 col-md-3">
-          <label class="form-label">Estado</label>
-          <select class="form-select" name="estado">
-            <option value="activo" selected>Activo</option>
-            <option value="inactivo">Inactivo</option>
-          </select>
-        </div>
-        <div class="col-12 col-md-4">
-          <label class="form-label">Wompi Public Key</label>
-          <input class="form-control" name="public_key_wompi" placeholder="pub_prod_xxx">
-        </div>
-        <div class="col-12 col-md-5">
-          <label class="form-label">Wompi Private Key</label>
-          <input class="form-control" name="private_key_wompi" placeholder="prv_prod_xxx">
-        </div>
-         <div class="col-12 col-md-5">
-          <label class="form-label">Wompi Integrity Secret</label>
-          <input class="form-control" name="integrity_secret_wompi" placeholder="integ_prod_xxx">
-        </div>
-        <div class="col-12 col-md-5">
-           <label class="form-label">Checkout URL (opcional)</label>
-           <input class="form-control" name="checkout_url_wompi" placeholder="https://checkout.wompi.co/p/">
-         </div>
+
+    <!-- OJO: añadimos superadmin-grid para el layout responsivo -->
+    <form method="POST"
+          action="{{ url_for('superadmin_crear_negocio', token=token) }}"
+          class="superadmin-grid">
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Nombre del negocio *</label>
+        <input class="form-control" name="nombre_negocio" required placeholder="Barbería Hollywood">
       </div>
-      <div class="form-actions-right mt-tight">
+
+      <div class="col-12 col-md-3">
+        <label class="form-label">Correo admin *</label>
+        <input type="email" class="form-control" name="correo" required placeholder="admin@demo.com">
+      </div>
+
+      <div class="col-12 col-md-2">
+        <label class="form-label">Contraseña *</label>
+        <input type="password" class="form-control" name="contrasena" required placeholder="123456" autocomplete="new-password">
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label">Celular (WhatsApp)</label>
+        <input class="form-control" name="celular" placeholder="3100000000">
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Nombre del propietario *</label>
+        <input class="form-control" name="nombre_propietario" required placeholder="Juan Pérez">
+      </div>
+
+      <div class="col-12 col-md-3">
+        <label class="form-label">Estado</label>
+        <select class="form-select" name="estado">
+          <option value="activo" selected>Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Wompi Public Key</label>
+        <input class="form-control" name="public_key_wompi" placeholder="pub_prod_xxx">
+      </div>
+
+      <div class="col-12 col-md-5">
+        <label class="form-label">Wompi Private Key</label>
+        <input class="form-control" name="private_key_wompi" placeholder="prv_prod_xxx">
+      </div>
+
+      <div class="col-12 col-md-5">
+        <label class="form-label">Wompi Integrity Secret</label>
+        <input class="form-control" name="integrity_secret_wompi" placeholder="integ_prod_xxx">
+      </div>
+
+      <!-- Campo largo a todo el ancho -->
+      <div class="col-12 col-md-5 col-span-2">
+        <label class="form-label">Checkout URL (opcional)</label>
+        <input class="form-control" name="checkout_url_wompi" placeholder="https://checkout.wompi.co/p/">
+      </div>
+
+      <!-- Botón alineado (full width en móvil) -->
+      <div class="col-span-2 superadmin-actions mt-tight">
         <button class="btn btn-primary">🚀 Registrar Negocio</button>
-     </div>
+      </div>
     </form>
   </div>
 
@@ -82,8 +97,8 @@
           {% for n in negocios %}
           <tr>
             <td>{{ n["id"] }}</td>
-            <td>{{ n["nombre_negocio"] }}</td>
-            <td>{{ n["correo"] }}</td>
+            <td class="text-truncate">{{ n["nombre_negocio"] }}</td>
+            <td class="text-truncate">{{ n["correo"] }}</td>
             <td>{{ n["celular"] or '—' }}</td>
             <td>
               <span class="badge {% if n['estado']=='activo' %}bg-success{% else %}bg-secondary{% endif %}">
@@ -91,20 +106,20 @@
               </span>
             </td>
             <td>{{ n["total_rifas"] or 0 }}</td>
-            <td>
+            <td class="actions">
               <form method="POST" action="{{ url_for('superadmin_estado_negocio', token=token) }}" class="d-inline">
-              <input type="hidden" name="negocio_id" value="{{ n['id'] }}">
-              {% if n["estado"] == "activo" %}
-             <button class="btn btn-sm btn-outline-danger" name="accion" value="desactivar">⛔ Desactivar</button>
-             {% else %}
-             <button class="btn btn-sm btn-outline-success" name="accion" value="activar">✅ Activar</button>
-             {% endif %}
-             </form>
+                <input type="hidden" name="negocio_id" value="{{ n['id'] }}">
+                {% if n["estado"] == "activo" %}
+                  <button class="btn btn-sm btn-outline-danger" name="accion" value="desactivar">⛔ Desactivar</button>
+                {% else %}
+                  <button class="btn btn-sm btn-outline-success" name="accion" value="activar">✅ Activar</button>
+                {% endif %}
+              </form>
             </td>
           </tr>
           {% endfor %}
           {% if negocios|length == 0 %}
-          <tr><td colspan="7" class="text-secondary">No hay negocios registrados.</td></tr>
+            <tr><td colspan="7" class="text-secondary">No hay negocios registrados.</td></tr>
           {% endif %}
         </tbody>
       </table>
