@@ -19,9 +19,13 @@
   /* Tabla elegante y legible */
   .table-dark thead th{ color:#eef3ff; border-bottom-color:rgba(255,255,255,.08); }
   .table-dark tbody tr:hover{ background:rgba(255,255,255,.06); }
-  .text-truncate-2{
-    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
-  }
+  .text-truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2; /* estándar */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
 
   /* En pantallas chicas: respirito y scroll suave */
   @media (max-width: 576px){
