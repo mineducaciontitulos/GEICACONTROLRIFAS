@@ -125,33 +125,42 @@ def superadmin_crear_negocio():
         flash("Nombre, correo y contraseña son obligatorios.", "warning")
         return redirect(url_for("superadmin_panel", token=token))
 
-    # Validar PRODUCCIÓN obligatoria (como me pediste)
+    # Producción obligatoria (tal como lo tenías)
     if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
         flash("Debes registrar llaves Wompi de PRODUCCIÓN (pub_prod_ / prv_prod_ / prod_integrity_).", "danger")
         return redirect(url_for("superadmin_panel", token=token))
 
-    con = db()
-    cur = con.cursor()
-    # Evita duplicados por correo
-    cur.execute("SELECT 1 FROM negocios WHERE correo = %s", (correo,))
-    if cur.fetchone():
+    try:
+        con = db()
+        cur = con.cursor()  # para INSERT/SELECT no necesitamos dict aquí
+
+        # Duplicado por correo
+        cur.execute("SELECT 1 FROM negocios WHERE correo = %s", (correo,))
+        if cur.fetchone():
+            con.close()
+            flash("Ese correo ya está registrado.", "danger")
+            return redirect(url_for("superadmin_panel", token=token))
+
+        cur.execute("""
+            INSERT INTO negocios
+                (nombre_negocio, nombre_propietario, celular, correo, contrasena,
+                 public_key_wompi, private_key_wompi, integrity_secret_wompi,
+                 checkout_url_wompi, estado)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (nombre, propietario or nombre, celular, correo, contrasena,
+              pub, prv, itg, chk, estado))
+        con.commit()
         con.close()
-        flash("Ese correo ya está registrado.", "danger")
-        return redirect(url_for("superadmin_panel", token=token))
+        flash("Negocio creado ✅ (llaves de producción registradas)", "success")
+    except Exception as e:
+        try:
+            con.rollback()
+            con.close()
+        except Exception:
+            pass
+        flash(f"Error creando negocio: {e}", "danger")
 
-    # Inserta negocio
-    cur.execute("""
-        INSERT INTO negocios (nombre_negocio, nombre_propietario, celular, correo, contrasena,
-                              public_key_wompi, private_key_wompi, integrity_secret_wompi, checkout_url_wompi, estado)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (nombre, propietario or nombre, celular, correo, contrasena,
-          pub, prv, itg, chk, estado))
-    con.commit()
-    con.close()
-
-    flash("Negocio creado ✅ (llaves de producción registradas)", "success")
     return redirect(url_for("superadmin_panel", token=token))
-
 
 @app.route("/superadmin")
 def superadmin_panel():
@@ -160,24 +169,31 @@ def superadmin_panel():
         flash("Acceso denegado. Agrega ?token=geica-dev", "danger")
         return redirect(url_for("login"))
 
-    con = db()
-    cur = con.cursor(cursor_factory=RealDictCursor)
-    cur.execute("""
-        SELECT 
-          n.id,
-          n.nombre_negocio,
-          n.correo,
-          n.celular,
-          n.estado,
-          (SELECT COUNT(1) FROM rifas r WHERE r.id_negocio = n.id) AS total_rifas
-        FROM negocios n
-        ORDER BY n.id DESC
-    """)
-    negocios = cur.fetchall()
-    con.close()
-
-    return render_template("panel_superadmin.html", negocios=negocios, token=token)
-
+    try:
+        con = db()
+        cur = con.cursor(cursor_factory=RealDictCursor)  # <-- para que el template use n["id"]
+        cur.execute("""
+            SELECT 
+              n.id,
+              n.nombre_negocio,
+              n.correo,
+              n.celular,
+              n.estado,
+              (SELECT COUNT(1) FROM rifas r WHERE r.id_negocio = n.id) AS total_rifas
+            FROM negocios n
+            ORDER BY n.id DESC
+        """)
+        negocios = cur.fetchall()
+        con.close()
+        return render_template("panel_superadmin.html", negocios=negocios, token=token)
+    except Exception as e:
+        try:
+            con.close()
+        except Exception:
+            pass
+        # Si algo truena (p. ej., tabla no existe), no muestres 500 en blanco
+        flash(f"Error cargando panel de superadmin: {e}", "danger")
+        return redirect(url_for("login"))
 
 @app.post("/superadmin/estado-negocio")
 def superadmin_estado_negocio():
@@ -195,13 +211,20 @@ def superadmin_estado_negocio():
 
     nuevo_estado = "activo" if accion == "activar" else "inactivo"
 
-    con = db()
-    cur = con.cursor()
-    cur.execute("UPDATE negocios SET estado=%s WHERE id=%s", (nuevo_estado, negocio_id))
-    con.commit()
-    con.close()
+    try:
+        con = db()
+        cur = con.cursor()
+        cur.execute("UPDATE negocios SET estado=%s WHERE id=%s", (nuevo_estado, negocio_id))
+        con.commit()
+        con.close()
+        flash(f"Negocio {accion}do correctamente.", "success")
+    except Exception as e:
+        try:
+            con.rollback(); con.close()
+        except Exception:
+            pass
+        flash(f"No se pudo actualizar el estado: {e}", "danger")
 
-    flash(f"Negocio {accion}do correctamente.", "success")
     return redirect(url_for("superadmin_panel", token=token))
 
 @app.route("/")
