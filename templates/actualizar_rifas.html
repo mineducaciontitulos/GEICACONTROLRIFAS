@@ -1,10 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
+
+<style>
+  /* Paleta consistente */
+  .btn-amarillo { background:#FFD600; color:#000 !important; border:none; }
+  .btn-amarillo:hover { background:#e6c200; }
+
+  .btn-azul { background:#0033A0; color:#fff !important; border:none; }
+  .btn-azul:hover { background:#002680; }
+
+  /* Contenedor “glass” con borde luminoso */
+  .glass {
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:14px;
+    box-shadow:0 0 14px rgba(255,214,0,.22);
+  }
+
+  /* Tabla elegante y legible */
+  .table-dark thead th{ color:#eef3ff; border-bottom-color:rgba(255,255,255,.08); }
+  .table-dark tbody tr:hover{ background:rgba(255,255,255,.06); }
+  .text-truncate-2{
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+
+  /* En pantallas chicas: respirito y scroll suave */
+  @media (max-width: 576px){
+    .container{ padding-left:16px; padding-right:16px; }
+  }
+</style>
+
 <div class="container py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="m-0">🛠️ Actualizar Rifas Activas</h2>
-    <a href="{{ url_for('panel') }}" class="btn btn-outline-light">⬅️ Volver al Panel</a>
+  <!-- Header + acción -->
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h2 class="m-0" style="line-height:1.25;">🛠️ Actualizar Rifas Activas</h2>
+    <a href="{{ url_for('panel') }}" class="btn btn-amarillo">⬅️ Volver al Panel</a>
   </div>
 
   <div class="glass p-3">
@@ -18,31 +48,41 @@
               <th class="text-center">Cifras</th>
               <th class="text-center">Cantidad</th>
               <th>Estado</th>
-              <th class="text-end" style="width:140px">Acción</th>
+              <th class="text-end" style="width:160px">Acción</th>
             </tr>
           </thead>
           <tbody>
             {% for r in rifas %}
             <tr>
-              <td>
-                <div class="fw-semibold">{{ r["nombre"] }}</div>
-                <div class="small text-secondary text-truncate" style="max-width:420px;">
-                  {{ r["descripcion"] or "—" }}
-                </div>
+              <td style="max-width:420px">
+                <div class="fw-semibold text-truncate">{{ r["nombre"] }}</div>
+                <div class="small text-secondary text-truncate-2">{{ r["descripcion"] or "—" }}</div>
               </td>
+
               <td class="text-end">$ {{ "{:,}".format(r["valor_numero"]|int).replace(",", ".") }}</td>
               <td class="text-center">{{ r["cifras"] }}</td>
               <td class="text-center">{{ r["cantidad_numeros"] }}</td>
+
               <td>
                 <span class="badge {% if r['estado']=='activa' %}bg-success{% else %}bg-secondary{% endif %}">
                   {{ r["estado"]|capitalize }}
                 </span>
               </td>
+
               <td class="text-end">
-                <!-- Si ya tienes la ruta de edición, déjala así; si no, cámbiala a url_for('ver_rifas') -->
-                <a href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}" class="btn btn-primary btn-sm">
-                ✏️ Editar
-                </a>
+                <div class="d-flex justify-content-end gap-2 flex-wrap">
+                  <!-- Si aún no tienes vista de edición, queda como acceso rápido a la pública -->
+                  <a href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}"
+                     target="_blank"
+                     class="btn btn-azul btn-sm" aria-label="Editar rifa">
+                    ✏️ Editar
+                  </a>
+                  <a href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}"
+                     target="_blank"
+                     class="btn btn-amarillo btn-sm" aria-label="Ver pública">
+                    🌐 Ver pública
+                  </a>
+                </div>
               </td>
             </tr>
             {% endfor %}

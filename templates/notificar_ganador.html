@@ -1,5 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+  /* Ajuste de lista desplegable y opciones */
+  #nombre_rifa {
+    background-color: #111827;  /* fondo oscuro */
+    color: #ffffff;             /* texto blanco por defecto */
+    border: 2px solid red;      /* borde rojo por defecto */
+    border-radius: 6px;
+    transition: border-color 0.3s ease;
+  }
+  #nombre_rifa:focus {
+    border-color: #22c55e;      /* verde al enfocar */
+    outline: none;
+  }
+  #nombre_rifa option {
+    background-color: #ffffff;  /* fondo blanco al desplegar */
+    color: #000000;              /* texto negro para contraste */
+  }
+</style>
+
 <div class="container py-4">
   <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
     <h2 class="m-0">🏆 Notificar Ganador</h2>
@@ -10,7 +29,7 @@
 
   <div class="glass p-4">
     <form method="POST" action="{{ url_for('notificar_ganador') }}" class="row g-3">
-      <!-- Selección de rifa por NOMBRE (lo que espera tu app.py) -->
+      <!-- Selección de rifa por NOMBRE -->
       <div class="col-12 col-md-6">
         <label for="nombre_rifa" class="form-label">Rifa</label>
         <select class="form-select" id="nombre_rifa" name="nombre_rifa" required>
@@ -21,7 +40,7 @@
         <div class="form-text">Elige la rifa donde se realizó el sorteo.</div>
       </div>
 
-      <!-- Número ganador (texto para permitir 0 a la izquierda) -->
+      <!-- Número ganador -->
       <div class="col-12 col-md-6">
         <label for="numero_ganador" class="form-label">Número ganador</label>
         <input

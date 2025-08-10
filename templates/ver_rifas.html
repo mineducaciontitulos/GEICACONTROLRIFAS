@@ -1,19 +1,32 @@
 {% extends "base.html" %}
 {% block content %}
+<!-- Estilos locales solo para esta vista -->
+<style>
+  /* Resalta el contenedor con borde rojo sin depender del CSS global */
+  .glass-rifas{
+    border: 2px solid #ef4444;          /* rojo */
+    border-radius: 12px;                 /* por si el global no aplica */
+    background: rgba(255,255,255,0.05);  /* leve contraste sobre el fondo */
+    box-shadow: 0 6px 20px rgba(0,0,0,.35);
+  }
+</style>
+
 <div class="container py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="m-0">📋 Tus Rifas</h2>
-    <div class="d-flex gap-2">
+  <!-- Header + acciones -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+    <h2 class="m-0" style="line-height:1.25;">📋 Tus Rifas</h2>
+    <div class="d-flex flex-wrap gap-2">
       <a href="{{ url_for('crear_rifa') }}" class="btn btn-success">+ Crear Rifa</a>
       <a href="{{ url_for('panel') }}" class="btn btn-outline-secondary">⬅️ Volver al Panel</a>
     </div>
   </div>
 
-  <div class="glass p-3">
+  <!-- ✅ Solo agrego la clase glass-rifas -->
+  <div class="glass glass-rifas p-3">
     {% if rifas and rifas|length > 0 %}
     <div class="table-responsive">
-      <table class="table table-striped table-hover align-middle mb-0">
+      <table class="table table-dark table-borderless align-middle mb-0">
         <thead>
           <tr>
             <th>Rifa</th>
@@ -33,8 +46,8 @@
           {% set pct = (vendidos * 100 // total) if total else 0 %}
           <tr>
             <td class="fw-semibold">
-              {{ r["nombre"] }}
-              <div class="small text-secondary">{{ r["descripcion"] }}</div>
+              <div class="text-truncate" style="max-width:260px">{{ r["nombre"] }}</div>
+              <div class="small text-secondary text-truncate" style="max-width:340px">{{ r["descripcion"] }}</div>
             </td>
             <td class="text-end">$ {{ "{:,}".format(r["valor_numero"]).replace(",", ".") }}</td>
             <td class="text-center">{{ total }}</td>
@@ -53,18 +66,15 @@
                 {{ r["estado"]|capitalize }}
               </span>
             </td>
-            <td class="small text-truncate" style="max-width:240px;">
+            <td class="small text-truncate" style="max-width:260px;">
               {{ request.host_url.rstrip('/') }}/r/{{ r["link_publico"] }}
             </td>
             <td class="text-end">
-              <!-- CAMBIO ÚNICO: de btn-group a actions para dar espacio/flujo -->
-              <div class="actions">
+              <div class="d-flex justify-content-end gap-2 flex-wrap">
                 <a class="btn btn-info btn-sm" target="_blank"
-                   href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}"
-                   aria-label="Abrir rifa pública">🌐 Abrir</a>
+                   href="{{ url_for('rifa_publica', link_publico=r['link_publico']) }}">🌐 Abrir</a>
                 <button type="button" class="btn btn-primary btn-sm btn-copiar"
-                        data-url="{{ request.host_url.rstrip('/') }}/r/{{ r['link_publico'] }}"
-                        aria-label="Copiar enlace de rifa">📋 Copiar</button>
+                        data-url="{{ request.host_url.rstrip('/') }}/r/{{ r['link_publico'] }}">📋 Copiar</button>
               </div>
             </td>
           </tr>
@@ -80,7 +90,6 @@
 </div>
 
 <script>
-  // Pintar progreso sin Jinja en CSS
   (function(){
     var bars = document.querySelectorAll('.progress-bar[data-pct]');
     for (var i = 0; i < bars.length; i++) {
@@ -92,8 +101,6 @@
       el.style.background = '#22c55e';
       el.style.transition = 'width .3s ease';
     }
-
-    // Copiar link desde data-url
     var copiarBtns = document.querySelectorAll('.btn-copiar[data-url]');
     function copiar(txt){
       if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -115,7 +122,6 @@
         if (url) copiar(url);
       });
     }
-
     function toast(msg){
       var b = document.createElement('div');
       b.textContent = msg;

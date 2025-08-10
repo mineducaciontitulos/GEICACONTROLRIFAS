@@ -412,7 +412,7 @@ def generar_pago():
     2) Limpia reservas vencidas
     3) Verifica disponibilidad y RESERVA con expiración
     4) Crea/actualiza comprador y compra 'pendiente'
-    5) Genera link Wompi (PRODUCCIÓN obligatoria)
+    5) Genera link Wompi (ahora acepta PRODUCCIÓN o PRUEBA)
     """
     data = request.form
     try:
@@ -444,7 +444,7 @@ def generar_pago():
 
     con = db(); cur = con.cursor(cursor_factory=RealDictCursor)
 
-    # Carga negocio (DEBE TENER LLAVES DE PRODUCCIÓN)
+    # Carga negocio
     cur.execute("SELECT * FROM negocios WHERE id = %s", (rifa["id_negocio"],))
     negocio = cur.fetchone()
 
@@ -495,22 +495,27 @@ def generar_pago():
     compra_id = cur.fetchone()["id"]
     con.commit()
 
-    # 5) Link de pago (PRODUCCIÓN OBLIGATORIA)
+    # 5) Link de pago (ACEPTA PRODUCCIÓN o PRUEBA)
     def _clean(s): return (s or "").strip()
     pub = _clean(negocio.get("public_key_wompi", ""))
     prv = _clean(negocio.get("private_key_wompi", ""))
     itg = _clean(negocio.get("integrity_secret_wompi", ""))
     chk = _clean(negocio.get("checkout_url_wompi", ""))
 
-    print("[WOMPI][APP][PROD]", "pub=", pub[:12], "itg=", (itg or "")[:16], "total=", total, flush=True)
+    is_prod = pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")
+    is_test = pub.startswith("pub_test_") and prv.startswith("prv_test_") and itg.startswith("test_integrity_")
 
-    if not (pub.startswith("pub_prod_") and prv.startswith("prv_prod_") and itg.startswith("prod_integrity_")):
-        # liberar reservas y eliminar compra para no “pegar” números
+    if is_prod:
+        wompi_env = "production"
+    elif is_test:
+        wompi_env = "sandbox"   # ambiente de pruebas
+    else:
+        # liberar reservas y eliminar compra si las llaves no matchean ningún esquema
         qin = ",".join(["%s"] * len(ids_numeros))
         cur.execute(f"UPDATE numeros SET estado='disponible', reservado_hasta=NULL WHERE id IN ({qin})", ids_numeros)
         cur.execute("DELETE FROM compras WHERE id = %s", (compra_id,))
         con.commit(); con.close()
-        return jsonify({"ok": False, "error": "Llaves Wompi inválidas. Se requieren pub_prod_ / prv_prod_ / prod_integrity_."}), 400
+        return jsonify({"ok": False, "error": "Llaves Wompi inválidas. Usa pub_prod_/prv_prod_/prod_integrity_ o pub_test_/prv_test_/test_integrity_."}), 400
 
     referencia  = f"compra_{compra_id}"
     descripcion = f"Rifa {rifa['nombre']} - Números {numeros_str}"
@@ -524,9 +529,9 @@ def generar_pago():
             customer_email=correo,
             wompi_public_key=pub,
             wompi_private_key=prv,
-            wompi_env="production",
+            wompi_env=wompi_env,                          # <- producción o sandbox
             wompi_integrity_secret=itg,
-            wompi_checkout_base=chk or "https://checkout.wompi.co/p/"
+            wompi_checkout_base=chk or "https://checkout.wompi.co/p/"  # base por defecto
         )
         con.close()
         return jsonify({"ok": True, "checkout_url": checkout_url})
@@ -537,7 +542,7 @@ def generar_pago():
         cur.execute("DELETE FROM compras WHERE id = %s", (compra_id,))
         con.commit(); con.close()
         return jsonify({"ok": False, "error": f"No se pudo generar el link de pago: {e}"}), 500
-
+    
 @app.after_request
 def no_cache(resp):
     resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

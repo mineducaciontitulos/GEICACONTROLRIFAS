@@ -1,40 +1,122 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="container py-4">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
+<style>
+  /* ===== Scope solo para esta vista ===== */
+  .crear-rifa .glass{
+    background: rgba(255,255,255,.055);
+    border: 2px solid rgba(255,255,255,.14);
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(0,0,0,.22), 0 0 0 2px rgba(255,214,0,.10) inset;
+  }
+
+  /* Encabezado: botón full en móvil */
+  @media (max-width: 576px){
+    .crear-rifa .btn-back{ width:100%; }
+  }
+
+  /* Inputs / selects */
+  .crear-rifa .form-label{ font-weight:600; letter-spacing:.2px; }
+  .crear-rifa .form-control,
+  .crear-rifa .form-select{
+    color:#eef3ff;
+    background: rgba(255,255,255,.10);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:12px;
+    min-height:44px;
+  }
+  .crear-rifa .form-control::placeholder{ color:rgba(233,239,255,.65); }
+  .crear-rifa .form-control:focus,
+  .crear-rifa .form-select:focus{
+    border-color:#3b82f6;
+    box-shadow:0 0 0 .25rem rgba(59,130,246,.25);
+  }
+
+  /* Select: que el desplegable sea legible (texto oscuro sobre fondo claro) */
+  .crear-rifa select.form-select,
+  .crear-rifa select.form-select option{ color:#0f172a; background:#ffffff; }
+  /* En la caja cerrada mantenemos el look dark */
+  .crear-rifa select.form-select {
+    color:#eef3ff;
+    background:rgba(255,255,255,.10);
+  }
+
+  /* Validación verde/rojo si quisieras marcar manualmente is-valid/is-invalid */
+  .crear-rifa .form-control.is-valid{
+    border-color:#198754 !important;
+    box-shadow:0 0 0 .25rem rgba(25,135,84,.25);
+  }
+  .crear-rifa .form-control.is-invalid{
+    border-color:#dc3545 !important;
+    box-shadow:0 0 0 .25rem rgba(220,53,69,.25);
+  }
+
+  /* Botón principal con punch */
+  .crear-rifa .btn-success{
+    background: linear-gradient(45deg,#22c55e,#16a34a);
+    border:none;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(34,197,94,.35);
+  }
+  .crear-rifa .btn-success:hover{
+    transform:translateY(-1px);
+    box-shadow:0 10px 24px rgba(34,197,94,.5);
+  }
+
+  /* Preview imagen */
+  .crear-rifa .preview-wrap{
+    width:100%;
+    min-height:140px;
+    display:flex; align-items:center; justify-content:center;
+    border:2px dashed rgba(255,255,255,.25);
+    border-radius:12px;
+    background:linear-gradient(135deg,
+              rgba(255,0,150,.07),
+              rgba(0,204,255,.07),
+              rgba(255,255,0,.07));
+  }
+  .crear-rifa #preview{
+    max-height:160px; border-radius:10px;
+    border:2px solid rgba(255,255,255,.25);
+    box-shadow:0 10px 20px rgba(0,0,0,.25);
+  }
+</style>
+
+<div class="container py-4 crear-rifa">
+
+  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
     <h2 class="m-0">🎟️ Crear Nueva Rifa</h2>
-    <a href="{{ url_for('panel') }}" class="btn btn-outline-secondary">⬅️ Volver al Panel</a>
+    <a href="{{ url_for('panel') }}" class="btn btn-outline-secondary btn-back">⬅️ Volver al Panel</a>
   </div>
 
   <form class="glass p-4" action="{{ url_for('crear_rifa') }}" method="POST" enctype="multipart/form-data">
     <div class="row g-3">
 
-      <!-- NOMBRE (backend: nombre) -->
+      <!-- NOMBRE -->
       <div class="col-12 col-md-6">
         <label class="form-label">Título de la rifa *</label>
         <input class="form-control" name="nombre" required placeholder="Moto Yamaha FZ 2.0">
       </div>
 
-      <!-- AVALUO (backend: avaluo) -->
+      <!-- AVALÚO -->
       <div class="col-12 col-md-3">
         <label class="form-label">Avalúo del premio (COP)</label>
         <input type="number" class="form-control" name="avaluo" min="0" step="1000" placeholder="15000000">
       </div>
 
-      <!-- LOTERÍA (backend: nombre_loteria) -->
+      <!-- LOTERÍA -->
       <div class="col-12 col-md-3">
-        <label class="form-label">Lotería / Sorteo*</label>
+        <label class="form-label">Lotería / Sorteo *</label>
         <input class="form-control" name="nombre_loteria" required placeholder="Lotería de Bogotá">
       </div>
 
-      <!-- DESCRIPCIÓN (backend: descripcion) -->
+      <!-- DESCRIPCIÓN -->
       <div class="col-12">
         <label class="form-label">Descripción del premio *</label>
         <textarea class="form-control" name="descripcion" rows="3" required placeholder="Modelo, color, condiciones, entrega..."></textarea>
       </div>
 
-      <!-- CIFRAS (backend: cifras) -->
+      <!-- CIFRAS -->
       <div class="col-12 col-md-4">
         <label class="form-label">Cantidad de cifras *</label>
         <select class="form-select" name="cifras" id="cifras" required>
@@ -45,19 +127,19 @@
         <small class="text-secondary d-block mt-1">Si eliges 2 cifras, la cantidad será 100 fija.</small>
       </div>
 
-      <!-- CANTIDAD (backend: cantidad_numeros) -->
+      <!-- CANTIDAD -->
       <div class="col-12 col-md-4">
         <label class="form-label">Cantidad de números *</label>
         <input type="number" class="form-control" name="cantidad_numeros" id="cantidad" min="1" value="100" required>
       </div>
 
-      <!-- VALOR NÚMERO (backend: valor_numero) -->
+      <!-- VALOR Nº -->
       <div class="col-12 col-md-4">
         <label class="form-label">Precio por número (COP) *</label>
         <input type="number" class="form-control" name="valor_numero" min="1000" step="500" required placeholder="10000">
       </div>
 
-      <!-- IMAGEN (backend: imagen_premio) -->
+      <!-- IMAGEN -->
       <div class="col-12 col-md-6">
         <label class="form-label">Imagen del premio</label>
         <input type="file" class="form-control" name="imagen_premio" accept="image/*" id="imagen">
@@ -66,7 +148,9 @@
 
       <!-- PREVIEW -->
       <div class="col-12 col-md-6 d-flex align-items-end">
-        <img id="preview" alt="Vista previa" class="rounded border d-none" style="max-height:140px;">
+        <div class="preview-wrap w-100">
+          <img id="preview" alt="Vista previa" class="d-none">
+        </div>
       </div>
 
     </div>
@@ -79,7 +163,7 @@
 </div>
 
 <script>
-  // fijar cantidad=100 cuando son 2 cifras
+  // Fijar cantidad=100 cuando son 2 cifras
   const sel = document.getElementById('cifras');
   const cant = document.getElementById('cantidad');
   const syncCantidad = () => {
@@ -89,7 +173,7 @@
   sel.addEventListener('change', syncCantidad);
   syncCantidad();
 
-  // preview imagen
+  // Preview imagen
   const inputImg = document.getElementById('imagen');
   const preview = document.getElementById('preview');
   inputImg?.addEventListener('change', (e) => {
@@ -100,4 +184,5 @@
     preview.classList.remove('d-none');
   });
 </script>
+
 {% endblock %}

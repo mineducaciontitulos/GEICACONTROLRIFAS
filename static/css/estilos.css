@@ -341,3 +341,17 @@ textarea.form-control{
 
 /* Tablas con scroll si hace falta */
 .table-responsive{ overflow-x:auto; }
+
+.glass {
+  background: rgba(255, 255, 255, 0.05); /* Fondo más claro translúcido */
+  border: 1px solid rgba(255, 255, 255, 0.12); /* Borde suave */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Sombra para flotar */
+  border-radius: 12px; /* Esquinas redondeadas */
+}
+/* Ajuste para que el cuadro de rifas destaque */
+.glass {
+  background: rgba(255, 255, 255, 0.05); /* leve claridad */
+  border: 2px solid red; /* borde rojo */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); /* sombra para que flote */
+  border-radius: 12px; /* esquinas redondeadas */
+}
