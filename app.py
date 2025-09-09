@@ -505,7 +505,8 @@ def logout():
     flash("Sesión cerrada.", "info")
     return redirect(url_for("login"))
 
-# ---------------- CREAR RIFA ------------------------@app.route("/crear-rifa", methods=["GET", "POST"])
+# ---------------- CREAR RIFA ------------------------
+@app.route("/crear-rifa", methods=["GET", "POST"])
 def crear_rifa():
     negocio = negocio_actual()
     if not negocio:
