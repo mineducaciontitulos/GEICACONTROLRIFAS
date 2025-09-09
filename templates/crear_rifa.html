@@ -10,13 +10,11 @@
     box-shadow: 0 10px 28px rgba(0,0,0,.22), 0 0 0 2px rgba(255,214,0,.10) inset;
   }
 
-  /* Encabezado: botón full en móvil */
   @media (max-width: 576px){
     .crear-rifa .btn-back{ width:100%; }
   }
 
-  /* Inputs / selects */
-  .crear-rifa .form-label{ font-weight:600; letter-spacing:.2px; }
+  .crear-rifa .form-label{ font-weight:600; letter-spacing:.2px; white-space:nowrap; }
   .crear-rifa .form-control,
   .crear-rifa .form-select{
     color:#eef3ff;
@@ -32,26 +30,11 @@
     box-shadow:0 0 0 .25rem rgba(59,130,246,.25);
   }
 
-  /* Select: que el desplegable sea legible (texto oscuro sobre fondo claro) */
+  /* El desplegable del select legible */
   .crear-rifa select.form-select,
   .crear-rifa select.form-select option{ color:#0f172a; background:#ffffff; }
-  /* En la caja cerrada mantenemos el look dark */
-  .crear-rifa select.form-select {
-    color:#eef3ff;
-    background:rgba(255,255,255,.10);
-  }
+  .crear-rifa select.form-select { color:#eef3ff; background:rgba(255,255,255,.10); }
 
-  /* Validación verde/rojo si quisieras marcar manualmente is-valid/is-invalid */
-  .crear-rifa .form-control.is-valid{
-    border-color:#198754 !important;
-    box-shadow:0 0 0 .25rem rgba(25,135,84,.25);
-  }
-  .crear-rifa .form-control.is-invalid{
-    border-color:#dc3545 !important;
-    box-shadow:0 0 0 .25rem rgba(220,53,69,.25);
-  }
-
-  /* Botón principal con punch */
   .crear-rifa .btn-success{
     background: linear-gradient(45deg,#22c55e,#16a34a);
     border:none;
@@ -63,7 +46,6 @@
     box-shadow:0 10px 24px rgba(34,197,94,.5);
   }
 
-  /* Preview imagen */
   .crear-rifa .preview-wrap{
     width:100%;
     min-height:140px;
@@ -94,56 +76,63 @@
 
       <!-- NOMBRE -->
       <div class="col-12 col-md-6">
-        <label class="form-label">Título de la rifa *</label>
+        <label class="form-label">Título *</label>
         <input class="form-control" name="nombre" required placeholder="Moto Yamaha FZ 2.0">
       </div>
 
       <!-- AVALÚO -->
-      <div class="col-12 col-md-3">
-        <label class="form-label">Avalúo del premio (COP)</label>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Avalúo (COP)</label>
         <input type="number" class="form-control" name="avaluo" min="0" step="1000" placeholder="15000000">
       </div>
 
       <!-- LOTERÍA -->
-      <div class="col-12 col-md-3">
-        <label class="form-label">Lotería / Sorteo *</label>
+      <div class="col-6 col-md-3">
+        <label class="form-label">Lotería *</label>
         <input class="form-control" name="nombre_loteria" required placeholder="Lotería de Bogotá">
       </div>
 
-      <!-- DESCRIPCIÓN -->
-      <div class="col-12">
-        <label class="form-label">Descripción del premio *</label>
-        <textarea class="form-control" name="descripcion" rows="3" required placeholder="Modelo, color, condiciones, entrega..."></textarea>
+      <!-- FECHA/HORA DEL SORTEO -->
+      <div class="col-12 col-md-4">
+        <label class="form-label">Sorteo (fecha y hora)</label>
+        <input type="datetime-local" class="form-control" name="fecha_fin" id="fecha_fin">
+        <small class="text-secondary d-block mt-1">Al pasar esta fecha, la rifa se ocultará del panel de activas.</small>
       </div>
 
       <!-- CIFRAS -->
       <div class="col-12 col-md-4">
-        <label class="form-label">Cantidad de cifras *</label>
+        <label class="form-label">Cifras *</label>
         <select class="form-select" name="cifras" id="cifras" required>
-          <option value="2" selected>2 cifras (00–99)</option>
-          <option value="3">3 cifras (000–999)</option>
-          <option value="4">4 cifras (0000–9999)</option>
+          <option value="2" selected>2 (00–99)</option>
+          <option value="3">3 (000–999)</option>
+          <option value="4">4 (0000–9999)</option>
         </select>
-        <small class="text-secondary d-block mt-1">Si eliges 2 cifras, la cantidad será 100 fija.</small>
+        <small class="text-secondary d-block mt-1">Con 2 cifras, la cantidad será 100 fija.</small>
       </div>
 
       <!-- CANTIDAD -->
       <div class="col-12 col-md-4">
-        <label class="form-label">Cantidad de números *</label>
+        <label class="form-label">Cantidad *</label>
         <input type="number" class="form-control" name="cantidad_numeros" id="cantidad" min="1" value="100" required>
       </div>
 
       <!-- VALOR Nº -->
       <div class="col-12 col-md-4">
-        <label class="form-label">Precio por número (COP) *</label>
+        <label class="form-label">Precio Nº (COP) *</label>
         <input type="number" class="form-control" name="valor_numero" min="1000" step="500" required placeholder="10000">
+      </div>
+
+      <!-- DESCRIPCIÓN (fila completa para que no se deforme) -->
+      <div class="col-12">
+        <label class="form-label">Descripción *</label>
+        <textarea class="form-control" name="descripcion" rows="3" required placeholder="Modelo, color, condiciones, entrega..."></textarea>
       </div>
 
       <!-- IMAGEN -->
       <div class="col-12 col-md-6">
         <label class="form-label">Imagen del premio</label>
         <input type="file" class="form-control" name="imagen_premio" accept="image/*" id="imagen">
-        <small class="text-secondary">Opcional pero recomendado (JPG/PNG/WEBP).</small>
+        <small class="text-secondary">Opcional (JPG/PNG/WEBP).</small>
       </div>
 
       <!-- PREVIEW -->
@@ -183,6 +172,15 @@
     preview.src = url;
     preview.classList.remove('d-none');
   });
+
+  // Sugerir mínima fecha ahora (para evitar errores)
+  const ffin = document.getElementById('fecha_fin');
+  if (ffin){
+    const pad = n => String(n).padStart(2,'0');
+    const d = new Date();
+    const iso = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    ffin.min = iso;
+  }
 </script>
 
 {% endblock %}

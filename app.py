@@ -505,8 +505,7 @@ def logout():
     flash("Sesión cerrada.", "info")
     return redirect(url_for("login"))
 
-# ---------------- CREAR RIFA ------------------------
-@app.route("/crear-rifa", methods=["GET", "POST"])
+# ---------------- CREAR RIFA ------------------------@app.route("/crear-rifa", methods=["GET", "POST"])
 def crear_rifa():
     negocio = negocio_actual()
     if not negocio:
@@ -520,6 +519,16 @@ def crear_rifa():
         cantidad    = int(request.form.get("cantidad_numeros", "100"))
         valor       = int(request.form.get("valor_numero", "0"))
         loteria     = request.form.get("nombre_loteria", "").strip()
+
+        # 📅 nueva: fecha/hora del sorteo (opcional)
+        fecha_fin_str = (request.form.get("fecha_fin") or "").strip()
+        fecha_fin = None
+        if fecha_fin_str:
+            try:
+                # datetime-local => 'YYYY-MM-DDTHH:MM'
+                fecha_fin = datetime.fromisoformat(fecha_fin_str)
+            except Exception:
+                fecha_fin = None  # si viene mal, guardamos NULL
 
         # Imagen
         imagen_premio = None
@@ -540,13 +549,15 @@ def crear_rifa():
         con = db()
         cur = con.cursor(cursor_factory=RealDictCursor)
         cur.execute("""
-            INSERT INTO rifas (id_negocio, nombre, descripcion, avaluo, cifras, cantidad_numeros,
-                               valor_numero, nombre_loteria, imagen_premio, link_publico, estado)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'activa')
+            INSERT INTO rifas (
+                id_negocio, nombre, descripcion, avaluo, cifras, cantidad_numeros,
+                valor_numero, nombre_loteria, imagen_premio, link_publico, estado, fecha_fin
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'activa', %s)
             RETURNING id
         """, (
             negocio["id"], nombre, descripcion, avaluo, cifras, cantidad,
-            valor, loteria, imagen_premio, link_publico
+            valor, loteria, imagen_premio, link_publico, fecha_fin
         ))
         rifa_id = cur.fetchone()["id"]
 
