@@ -1,4 +1,27 @@
 {% extends "base.html" %}
+
+{# ======= META OG/TWITTER para previsualización en WhatsApp/FB/Twitter ======= #}
+{% block meta_og %}
+  {% set base = (app_base_url or request.host_url).rstrip('/') %}
+  {% set og_title = "🎟️ " ~ rifa["nombre"] ~ " — Participa y gana" %}
+  {% set og_desc  = (rifa["descripcion"] or ("Rifa organizada por " ~ (negocio["nombre_negocio"] or "GEICACONTROLRIFAS"))) %}
+  {% set og_img   = (rifa["imagen_premio"] and (base ~ url_for('static', filename=rifa['imagen_premio']))) 
+                    or (base ~ "/static/img/logo-geica.png") %}
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ og_title }}">
+  <meta property="og:description" content="{{ og_desc }}">
+  <meta property="og:image" content="{{ og_img }}">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="{{ base ~ request.path }}">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ og_title }}">
+  <meta name="twitter:description" content="{{ og_desc }}">
+  <meta name="twitter:image" content="{{ og_img }}">
+{% endblock %}
+
 {% block content %}
 
 <style>
@@ -104,6 +127,18 @@
         {% if rifa["descripcion"] %}
           <hr class="my-3">
           <p class="m-0">{{ rifa["descripcion"] }}</p>
+        {% endif %}
+
+        {# ===== Botón WhatsApp al BOT =====
+           Solo se muestra si 'wa_link' viene del backend.
+           Allí ya filtramos que NO sea el número de soporte, para que no haya confusión. #}
+        {% if wa_link %}
+          <a class="btn btn-success w-100 mt-3" href="{{ wa_link }}" target="_blank" rel="noopener">
+            💬 WhatsApp (atención automática)
+          </a>
+          <div class="form-text mt-1">
+            Te atiende el asistente del negocio. Si necesitas hablar con el organizador, él podrá responderte desde allí.
+          </div>
         {% endif %}
       </div>
 
@@ -218,7 +253,6 @@
       ev.preventDefault();
       if(!inputNums.value){
         toast('Selecciona al menos un número.');
-        // marca inputs para UX mínima
         return;
       }
       var fd = new FormData(form);

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Nueva compra confirmada</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    .wrap{max-width:640px;margin:0 auto;background:#0b1220;color:#eaf2ff;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,sans-serif;
+      border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.12)}
+    .head{padding:18px 22px;background:#0e1628;border-bottom:1px solid rgba(255,255,255,.08)}
+    .logo{height:36px;vertical-align:middle}
+    .body{padding:22px}
+    .title{margin:0 0 8px 0;font-size:20px;line-height:1.25}
+    .muted{color:#c6d4ff;font-size:14px;margin:0 0 16px 0}
+    .card{background:#101a31;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:14px;margin:16px 0}
+    .row{display:flex;justify-content:space-between;gap:8px;margin:6px 0}
+    .label{color:#a9b7e7;font-size:14px}
+    .value{font-weight:700;text-align:right}
+    .btn{display:inline-block;background:#60a5fa;color:#0b1220;text-decoration:none;
+      padding:10px 14px;border-radius:10px;font-weight:700;margin-top:10px}
+    .footer{padding:18px 22px;background:#0e1628;color:#b6c3eb;font-size:12px}
+    .chip{display:inline-block;background:#17213a;border:1px solid rgba(255,255,255,.12);
+      padding:6px 10px;border-radius:999px;margin:6px 6px 0 0;font-weight:700}
+    @media (max-width:520px){ .row{display:block} .value{text-align:left;margin-top:2px} }
+  </style>
+</head>
+<body style="background:#0a0f1c;margin:0;padding:22px">
+  <div class="wrap">
+    <div class="head">
+      <img class="logo" src="{{ logo_url }}" alt="GEICA ControlRifas" />
+    </div>
+    <div class="body">
+      <h2 class="title">✅ Nueva compra confirmada</h2>
+      <p class="muted">Se registró un pago aprobado en tu rifa.</p>
+
+      <div class="card">
+        <div class="row"><div class="label">Rifa</div><div class="value">{{ rifa.nombre }}</div></div>
+        <div class="row"><div class="label">Cliente</div><div class="value">{{ comprador.nombre }}</div></div>
+        <div class="row"><div class="label">Contacto</div><div class="value">{{ comprador.telefono }} · {{ comprador.correo }}</div></div>
+        <div class="row"><div class="label">Números</div><div class="value">{{ compra.numeros }}</div></div>
+        <div class="row"><div class="label">Total</div><div class="value">$ {{ "{:,}".format(compra.total).replace(",", ".") }} COP</div></div>
+
+        <!-- Campos nuevos -->
+        <div class="row"><div class="label">Medio de pago</div><div class="value">{{ compra.medio_pago or "—" }}</div></div>
+        <div class="row"><div class="label">Referencia</div><div class="value">{{ compra.referencia or "—" }}</div></div>
+        <div class="row"><div class="label">Fecha</div><div class="value">{{ compra.fecha|default("", true) }}</div></div>
+      </div>
+
+      <a class="btn" href="{{ link_admin }}" target="_blank" rel="noopener">Abrir panel</a>
+
+      <div style="margin-top:14px">
+        {% for n in numeros_lista %}
+          <span class="chip">#{{ n }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="footer">
+      GEICACONTROLRIFAS · Notificación automática.
+    </div>
+  </div>
+</body>
+</html>

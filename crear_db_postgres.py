@@ -28,7 +28,11 @@ CREATE TABLE IF NOT EXISTS negocios (
   merchant_id_wompi        TEXT DEFAULT ''::text,
   integrity_secret_wompi   TEXT DEFAULT ''::text,
   checkout_url_wompi       TEXT DEFAULT ''::text,
-  estado                   TEXT DEFAULT 'activo'
+  estado                   TEXT DEFAULT 'activo',
+  -- NUEVO: número de WhatsApp del negocio para el bot
+  wa_numero_receptor       TEXT,
+  -- NUEVO: configuración del bot (por negocio)
+  bot_config               JSONB
 );
 
 -- 3) rifas

@@ -12,6 +12,7 @@
   <div class="glass p-4 mb-4">
     <h5 class="mb-3">➕ Crear nuevo negocio</h5>
 
+    <!-- IMPORTANTE: mantenemos el token en la acción, como tenías -->
     <form method="POST" action="{{ url_for('superadmin_crear_negocio', token=token) }}">
       <div class="row g-3">
         <div class="col-12 col-sm-6 col-lg-4">
@@ -47,24 +48,44 @@
           </select>
         </div>
 
+        <!-- ===== Wompi ===== -->
         <div class="col-12 col-lg-5">
           <label class="form-label">Wompi Public Key</label>
-          <input class="form-control" name="public_key_wompi" placeholder="pub_prod_xxx">
+          <input class="form-control" name="public_key_wompi" placeholder="pub_prod_xxx o pub_test_xxx">
         </div>
 
         <div class="col-12 col-sm-6 col-lg-5">
           <label class="form-label">Wompi Private Key</label>
-          <input class="form-control" name="private_key_wompi" placeholder="prv_prod_xxx">
+          <input class="form-control" name="private_key_wompi" placeholder="prv_prod_xxx o prv_test_xxx">
         </div>
 
         <div class="col-12 col-sm-6 col-lg-5">
           <label class="form-label">Wompi Integrity Secret</label>
-          <input class="form-control" name="integrity_secret_wompi" placeholder="prod_integrity_xxx">
+          <input class="form-control" name="integrity_secret_wompi" placeholder="prod_integrity_xxx o test_integrity_xxx">
         </div>
 
         <div class="col-12 col-lg-7">
           <label class="form-label">Checkout URL (opcional)</label>
           <input class="form-control" name="checkout_url_wompi" placeholder="https://checkout.wompi.co/p/">
+        </div>
+
+        <!-- ===== Bot / WhatsApp por negocio (NUEVO) ===== -->
+        <div class="col-12 col-md-6">
+          <label class="form-label">WhatsApp del negocio (receptor bot)</label>
+          <input class="form-control" name="wa_numero_receptor" placeholder="whatsapp:+14155238886">
+          <div class="form-text">
+            Si cada negocio tendrá su propio número en Twilio, ponlo aquí para mapear el bot por <code>To</code>.
+            Si usarás un único número (sandbox), puedes dejarlo vacío.
+          </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+          <label class="form-label">Config del bot (JSON opcional)</label>
+          <textarea name="bot_config" class="form-control" rows="3"
+            placeholder='{"fallback":"Gracias por escribir. Te respondemos pronto."}'></textarea>
+          <div class="form-text">
+            Personaliza un mensaje de ayuda/espera por negocio. Debe ser JSON válido (ej: <code>{"fallback":"..."}</code>).
+          </div>
         </div>
       </div>
 

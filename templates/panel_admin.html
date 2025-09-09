@@ -20,7 +20,14 @@
     box-shadow: 0px 0px 12px rgba(255, 214, 0, 0.3); /* toque dorado */
     border-radius: 10px;
   }
+
+  .card-stat { padding: 14px; }
+  .card-stat .label { font-size: .9rem; color: #a9b5d9; }
+  .card-stat .value { font-size: 1.3rem; font-weight: 700; }
 </style>
+
+{% set activas = rifas|selectattr('estado', 'equalto', 'activa')|list %}
+{% set archivadas = rifas|rejectattr('estado', 'equalto', 'activa')|list %}
 
 <div class="container py-4">
 
@@ -40,32 +47,37 @@
   <div class="glass p-4 mb-4">
     <p class="mb-0 text-secondary">
       Bienvenido, <strong>{{ negocio["nombre_negocio"] }}</strong>. Aquí verás y gestionarás tus rifas.
+      <br>
+      <small class="text-secondary">
+        *Solo se muestran rifas <strong>activas</strong>. Las rifas vencidas se archivan automáticamente.*
+      </small>
     </p>
   </div>
 
-  <!-- Cards de estado -->
-  <div class="row g-3 mb-4">
-    {% set total = (rifas | sum(attribute='total')) if rifas else 0 %}
-    {% set vendidos = (rifas | sum(attribute='vendidos')) if rifas else 0 %}
-    {% set restantes = (total - vendidos) if total else 0 %}
-    {% set ingreso_estimado = (rifas | sum(attribute='valor_numero')) * vendidos if rifas else 0 %}
+  <!-- Cards de estado (solo rifas activas) -->
+  {% set total_act = (activas | sum(attribute='total')) if activas else 0 %}
+  {% set vendidos_act = (activas | sum(attribute='vendidos')) if activas else 0 %}
+  {% set disponibles_act = (total_act - vendidos_act) if total_act else 0 %}
+  {% set ingreso_estimado = ((activas | sum(attribute='valor_numero')) * vendidos_act) if activas else 0 %}
+  {% set count_arch = archivadas|length %}
 
+  <div class="row g-3 mb-4">
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="card-stat">
-        <div class="label">Números Totales</div>
-        <div class="value">{{ total }}</div>
+        <div class="label">Números Totales (activas)</div>
+        <div class="value">{{ total_act }}</div>
       </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="card-stat">
-        <div class="label">Vendidos</div>
-        <div class="value">{{ vendidos }}</div>
+        <div class="label">Vendidos (activas)</div>
+        <div class="value">{{ vendidos_act }}</div>
       </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
       <div class="card-stat">
-        <div class="label">Disponibles</div>
-        <div class="value">{{ restantes }}</div>
+        <div class="label">Disponibles (activas)</div>
+        <div class="value">{{ disponibles_act }}</div>
       </div>
     </div>
     <div class="col-12 col-sm-6 col-lg-3">
@@ -76,14 +88,14 @@
     </div>
   </div>
 
-  <!-- Lista rápida de rifas -->
-  <div class="glass p-3">
+  <!-- Lista rápida de rifas ACTIVAS -->
+  <div class="glass p-3 mb-3">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-      <h5 class="m-0">Tus Rifas</h5>
+      <h5 class="m-0">Tus Rifas Activas</h5>
       <a class="btn btn-sm btn-amarillo" href="{{ url_for('ver_rifas') }}">Ver todas →</a>
     </div>
 
-    {% if rifas and rifas|length > 0 %}
+    {% if activas and activas|length > 0 %}
     <div class="table-responsive">
       <table class="table table-dark table-borderless align-middle mb-0">
         <thead>
@@ -98,16 +110,14 @@
           </tr>
         </thead>
         <tbody>
-          {% for r in rifas %}
+          {% for r in activas %}
           <tr>
             <td class="fw-semibold text-truncate" style="max-width:220px">{{ r["nombre"] }}</td>
             <td>$ {{ "{:,}".format(r["valor_numero"]).replace(",", ".") }}</td>
             <td>{{ r["total"] }}</td>
             <td>{{ r["vendidos"] }}</td>
             <td>
-              <span class="badge {% if r['estado']=='activa' %}bg-success{% else %}bg-secondary{% endif %}">
-                {{ r["estado"]|capitalize }}
-              </span>
+              <span class="badge bg-success">{{ r["estado"]|capitalize }}</span>
             </td>
             <td class="small text-truncate" style="max-width:260px">
               {{ request.host_url.rstrip('/') }}/r/{{ r["link_publico"] }}
@@ -122,8 +132,55 @@
       </table>
     </div>
     {% else %}
-      <div class="text-secondary">Aún no tienes rifas. Crea la primera con el botón “+ Crear Rifa”.</div>
+      <div class="text-secondary">No tienes rifas activas. Crea una con “+ Crear Rifa”.</div>
     {% endif %}
+  </div>
+
+  <!-- Rifas ARCHIVADAS (oculto/plegable) -->
+  <div class="glass p-3">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+      <h5 class="m-0">Rifas Archivadas</h5>
+      <button class="btn btn-sm btn-blanco" type="button" data-bs-toggle="collapse" data-bs-target="#archivadasWrap">
+        Mostrar/Ocultar ({{ count_arch }})
+      </button>
+    </div>
+
+    <div id="archivadasWrap" class="collapse mt-3">
+      {% if archivadas and archivadas|length > 0 %}
+        <div class="table-responsive">
+          <table class="table table-dark table-borderless align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Rifa</th>
+                <th>Valor Nº</th>
+                <th>Total</th>
+                <th>Vendidos</th>
+                <th>Estado</th>
+                <th>Link público</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in archivadas %}
+              <tr>
+                <td class="fw-semibold text-truncate" style="max-width:220px">{{ r["nombre"] }}</td>
+                <td>$ {{ "{:,}".format(r["valor_numero"]).replace(",", ".") }}</td>
+                <td>{{ r["total"] }}</td>
+                <td>{{ r["vendidos"] }}</td>
+                <td>
+                  <span class="badge bg-secondary">{{ r["estado"]|capitalize }}</span>
+                </td>
+                <td class="small text-truncate" style="max-width:260px">
+                  {{ request.host_url.rstrip('/') }}/r/{{ r["link_publico"] }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="text-secondary">No hay rifas archivadas.</div>
+      {% endif %}
+    </div>
   </div>
 
 </div>

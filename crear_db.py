@@ -24,7 +24,11 @@ CREATE TABLE IF NOT EXISTS negocios (
     merchant_id_wompi TEXT DEFAULT '',
     integrity_secret_wompi TEXT DEFAULT '',
     checkout_url_wompi TEXT DEFAULT '',
-    estado TEXT DEFAULT 'activo'
+    estado TEXT DEFAULT 'activo',
+    -- NUEVO
+    wa_numero_receptor TEXT,
+    -- NUEVO (en SQLite guardamos JSON como texto)
+    bot_config TEXT
 );
 """)
 
@@ -42,8 +46,8 @@ CREATE TABLE IF NOT EXISTS rifas (
     imagen_premio TEXT,
     link_publico TEXT UNIQUE,
     estado TEXT DEFAULT 'activa',
-    fecha_inicio TEXT,      -- NUEVO (opcional)
-    fecha_fin TEXT,         -- NUEVO (opcional)
+    fecha_inicio TEXT,
+    fecha_fin TEXT,
     FOREIGN KEY (id_negocio) REFERENCES negocios(id)
 )
 """)
@@ -55,15 +59,15 @@ CREATE TABLE IF NOT EXISTS numeros (
     numero TEXT NOT NULL,
     estado TEXT DEFAULT 'disponible',  -- disponible, reservado, pagado
     id_comprador INTEGER,
-    reservado_hasta TEXT,              -- NUEVO: vencimiento de la reserva
+    reservado_hasta TEXT,
     FOREIGN KEY (id_rifa) REFERENCES rifas(id),
-    UNIQUE (id_rifa, numero)           -- NUEVO: evita duplicados en el talonario
+    UNIQUE (id_rifa, numero)
 )
 """)
 
 # Índices útiles
 cur.execute("CREATE INDEX IF NOT EXISTS idx_numeros_rifa_estado ON numeros(id_rifa, estado)")
-cur.execute("CREATE INDEX IF NOT EXISTS idx_compras_rifa ON compras(id_rifa)") if False else None
+# Nota: este índice de compras lo creamos después de definir la tabla compras (abajo)
 
 cur.execute("""
 CREATE TABLE IF NOT EXISTS compradores (
@@ -84,12 +88,16 @@ CREATE TABLE IF NOT EXISTS compras (
     total INTEGER NOT NULL,
     fecha TEXT NOT NULL,
     estado TEXT DEFAULT 'pendiente',
-    id_pago TEXT,                      -- opcional: id de la transacción en Wompi
-    referencia TEXT UNIQUE,            -- NUEVO: referencia "compra_123"
+    id_pago TEXT,               -- opcional: id de la transacción en Wompi
+    referencia TEXT UNIQUE,     -- referencia "compra_123"
     FOREIGN KEY (id_comprador) REFERENCES compradores(id),
     FOREIGN KEY (id_rifa) REFERENCES rifas(id)
 )
 """)
+
+# Índices de compras (después de crear la tabla)
+cur.execute("CREATE INDEX IF NOT EXISTS idx_compras_rifa ON compras(id_rifa)")
+cur.execute("CREATE INDEX IF NOT EXISTS idx_compras_referencia ON compras(referencia)")
 
 cur.execute("""
 CREATE TABLE IF NOT EXISTS pagos (
@@ -102,7 +110,6 @@ CREATE TABLE IF NOT EXISTS pagos (
 )
 """)
 
-
 conn.commit()
 conn.close()
-print("Base de datos creada exitosamente con reservas y mejoras.")
+print("Base de datos creada exitosamente con reservas, mejoras y soporte para bot por negocio.")
